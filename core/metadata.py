@@ -9,6 +9,8 @@ from mutagen.mp3 import MP3
 class MetadataManager:
     metadata = {}
 
+    def __init__(self, label_cover_of_book):
+        self.label_cover_of_book = label_cover_of_book
     @staticmethod
     def clear_metadata(*args):
         for widget in args:
@@ -38,24 +40,24 @@ class MetadataManager:
             QMessageBox.warning(None, "Ошибка", f"Исключение {e.args[0]}")
             return metadata, None
 
-    def show_cover_image(self, image_data, label_cover_of_book):
+    def show_cover_image(self, image_data):
         pixmap = QPixmap()
         pixmap.loadFromData(image_data)
         if pixmap.isNull():
             QMessageBox.warning(None, "Ошибка", "Не удалось загрузить изображение обложки.")
         else:
-            label_cover_of_book.setPixmap(
+            self.label_cover_of_book.setPixmap(
                 pixmap.scaled(
-                    label_cover_of_book.size(),
+                    self.label_cover_of_book.size(),
                     aspectRatioMode=QtCore.Qt.AspectRatioMode.KeepAspectRatio
                 )
             )
             self.metadata['image_data'] = image_data
 
-    def show_cover_image_path(self, cover_image_path, label_cover_of_book):
+    def show_cover_image_path(self, cover_image_path):
         with open(cover_image_path, 'rb') as f:
             image_data = f.read()
-        self.show_cover_image(image_data, label_cover_of_book)
+        self.show_cover_image(image_data)
 
     def extract_and_show_cover(self, audio, label_cover_of_book):
         if audio is None:
@@ -63,7 +65,7 @@ class MetadataManager:
             return
         try:
             image_data = audio.tags.getall('APIC')[0].data
-            self.show_cover_image(image_data, label_cover_of_book)
+            self.show_cover_image(image_data)
         except IndexError:
             label_cover_of_book.clear()
             QMessageBox.information(None, "Информация", "Обложка не найдена в выбранном файле.")

@@ -18,7 +18,7 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.setWindowTitle(Config.WINDOWTITLE)
 
         self.file_manager = FileManager()
-        self.metadata_manager = MetadataManager()
+        self.metadata_manager = MetadataManager(self.label_cover_of_book)
         self.audio_processor = AudioProcessor(ffmpeg_path=Config.FFMPEG_PATH)  # Укажите путь к ffmpeg
 
         self.init_ui()
