@@ -1,5 +1,5 @@
 # data/file_manager.py
-from PyQt5.QtWidgets import QFileDialog, QMessageBox
+from PyQt5.QtWidgets import QFileDialog, QMessageBox, QListWidget
 
 
 class FileManager:
@@ -7,7 +7,7 @@ class FileManager:
         self.file_paths = []
         self.cover_image_path = None
 
-    def add_files(self, listwidget):
+    def add_files(self, listwidget: QListWidget) -> None:
         """
             Добавляет выбранные MP3 файлы из выбранной папки в список.
 
@@ -31,17 +31,12 @@ class FileManager:
         selected_items = listwidget.selectedItems()
         if not selected_items:
             QMessageBox.warning(None, "Предупреждение", "Нет выбранных файлов для удаления.")
-            return
 
         for item in selected_items:
             file_path = item.text()
             if file_path in self.file_paths:
                 self.file_paths.remove(file_path)
             listwidget.takeItem(listwidget.row(item))
-
-        if not self.file_paths:
-            return True
-        return False
 
     @staticmethod
     def upload_cover():

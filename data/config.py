@@ -2,6 +2,7 @@
 import json
 import os
 
+
 class Config:
     WINDOWTITLE = 'Audiobook Maker'
     AUDIO_BITRATE = "64k"
