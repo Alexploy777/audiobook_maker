@@ -30,13 +30,23 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.comboBox_audio_quality.currentTextChanged.connect(
             self.update_audio_bitrate)  # connect - при выборе другого битрейта
 
-        self.pushButton.clicked.connect(self.add_files)
+        self.pushButton.clicked.connect(self.add_files)  # connect - для добавления файлов
         self.listWidget.itemSelectionChanged.connect(self.display_metadata)  # При выборе/выделении файла
 
-        self.pushButton_2.clicked.connect(self.remove_selected_files)
-        self.pushButton_upload_cover.clicked.connect(self.upload_cover)
-        # self.pushButton_convert.clicked.connect(self.start_conversion) #
-        self.pushButton_stop_and_clean.clicked.connect(self.stop_and_clean)
+        self.pushButton_2.clicked.connect(self.remove_selected_files)  # connect - для удаления выделенных файлов
+        self.pushButton_upload_cover.clicked.connect(self.upload_cover)  # connect - для загрузки обложки пользователя
+        self.pushButton_convert.clicked.connect(self.start_conversion)  # connect - для конвертации
+        self.pushButton_stop_and_clean.clicked.connect(self.stop_and_clean)  # connect - для остановки конвертации
+
+    def get_metadata_widgets(self):
+        return (
+            self.lineEdit_title,
+            self.lineEdit_artist,
+            self.lineEdit_album,
+            self.lineEdit_year,
+            self.lineEdit_genre,
+            self.label_cover_of_book
+        )
 
     @staticmethod
     def update_audio_bitrate(bitrate):
@@ -47,26 +57,12 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
 
     def remove_selected_files(self):
         if self.file_manager.remove_files(self.listWidget):
-            self.metadata_manager.clear_metadata(
-                self.lineEdit_title,
-                self.lineEdit_artist,
-                self.lineEdit_album,
-                self.lineEdit_year,
-                self.lineEdit_genre,
-                self.label_cover_of_book
-            )
+            self.metadata_manager.clear_metadata(*self.get_metadata_widgets())
 
     def display_metadata(self):
         selected_items = self.listWidget.selectedItems()
         if not selected_items:
-            self.metadata_manager.clear_metadata(
-                self.lineEdit_title,
-                self.lineEdit_artist,
-                self.lineEdit_album,
-                self.lineEdit_year,
-                self.lineEdit_genre,
-                self.label_cover_of_book
-            )
+            self.metadata_manager.clear_metadata(*self.get_metadata_widgets())
             return
 
         file_path = selected_items[0].text()
@@ -91,6 +87,9 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.progressBar.setValue(0)
 
     def stop_and_clean(self):
+        pass
+
+    def start_conversion(self):
         pass
 
 
