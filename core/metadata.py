@@ -11,6 +11,7 @@ class MetadataManager:
 
     def __init__(self, label_cover_of_book):
         self.label_cover_of_book = label_cover_of_book
+
     @staticmethod
     def clear_metadata(*args):
         for widget in args:
