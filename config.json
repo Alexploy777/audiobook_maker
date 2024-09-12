@@ -1,5 +1,12 @@
 {
-    "AUDIO_BITRATE": "320k",
+    "AUDIO_BITRATE": "64k",
+    "AUDIO_BITRATE_CHOICES": [
+        "64k",
+        "128k",
+        "256k",
+        "320k",
+        "512k"
+    ],
     "AUDIO_CODEC": "aac",
     "CHAPTER_MARKS": true,
     "CONFIG_FILE": "config.json",
@@ -10,6 +17,8 @@
     "DELETE_TEMP_FILES": true,
     "FFMPEG_LOG_LEVEL": "info",
     "FFMPEG_PATH": "external/ffmpeg.exe",
+    "MAX_THREADS": 4,
     "OUTPUT_FORMAT": "m4b",
-    "TEMP_DIR": "/tmp/audiobook_maker"
+    "TEMP_DIR": "/tmp/audiobook_maker",
+    "WINDOWTITLE": "Audiobook Maker"
 }

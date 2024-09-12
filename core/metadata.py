@@ -1,3 +1,4 @@
+# data/metadata.py
 from PyQt5 import QtCore
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QMessageBox
@@ -37,7 +38,6 @@ class MetadataManager:
             QMessageBox.warning(None, "Ошибка", f"Исключение {e.args[0]}")
             return metadata, None
 
-
     def show_cover_image(self, image_data, label_cover_of_book):
         pixmap = QPixmap()
         pixmap.loadFromData(image_data)
@@ -47,7 +47,7 @@ class MetadataManager:
             label_cover_of_book.setPixmap(
                 pixmap.scaled(
                     label_cover_of_book.size(),
-                    aspectRatioMode=QtCore.Qt.KeepAspectRatio
+                    aspectRatioMode=QtCore.Qt.AspectRatioMode.KeepAspectRatio
                 )
             )
             self.metadata['image_data'] = image_data

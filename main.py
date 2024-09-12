@@ -1,5 +1,5 @@
+# main.py
 import sys
-
 from PyQt5.QtWidgets import QMainWindow, QApplication, QMessageBox  # Импортируем класс QMainWindow и QApplication
 
 from core import AudioProcessor  # Подключаем AudioProcessor из core/audio_processing.py
@@ -13,9 +13,9 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super(AudiobookCreator, self).__init__()
         self.setupUi(self)
-        self.setWindowTitle('Audiobook Maker')
-
         Config.load_config()  # Загружаем конфигурацию при запуске приложения
+
+        self.setWindowTitle(Config.WINDOWTITLE)
 
         self.file_manager = FileManager()
         self.metadata_manager = MetadataManager()
@@ -24,7 +24,7 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.init_ui()
 
     def init_ui(self):
-        self.comboBox_audio_quality.addItems(["64k", "128k", "256k", "320k"])  # Добавляем варианты битрейта
+        self.comboBox_audio_quality.addItems(Config.AUDIO_BITRATE_CHOICES)  # Добавляем варианты битрейта
         self.comboBox_audio_quality.setCurrentText(Config.AUDIO_BITRATE)  # Устанавливаем текущее значение из Config
 
         self.comboBox_audio_quality.currentTextChanged.connect(
