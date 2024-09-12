@@ -31,12 +31,12 @@ class FileManager:
         selected_items = listwidget.selectedItems()
         if not selected_items:
             QMessageBox.warning(None, "Предупреждение", "Нет выбранных файлов для удаления.")
-
-        for item in selected_items:
-            file_path = item.text()
-            if file_path in self.file_paths:
-                self.file_paths.remove(file_path)
-            listwidget.takeItem(listwidget.row(item))
+        else:
+            for item in selected_items:
+                file_path = item.text()
+                if file_path in self.file_paths:
+                    self.file_paths.remove(file_path)
+                listwidget.takeItem(listwidget.row(item))
 
     @staticmethod
     def upload_cover():
