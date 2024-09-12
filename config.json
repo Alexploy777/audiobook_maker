@@ -1,0 +1,15 @@
+{
+    "AUDIO_BITRATE": "320k",
+    "AUDIO_CODEC": "aac",
+    "CHAPTER_MARKS": true,
+    "CONFIG_FILE": "config.json",
+    "COVER_IMAGE_FORMAT": "jpg",
+    "DEFAULT_AUTHOR": "Unknown",
+    "DEFAULT_GENRE": "Audiobook",
+    "DEFAULT_TITLE": "Untitled",
+    "DELETE_TEMP_FILES": true,
+    "FFMPEG_LOG_LEVEL": "info",
+    "FFMPEG_PATH": "external/ffmpeg.exe",
+    "OUTPUT_FORMAT": "m4b",
+    "TEMP_DIR": "/tmp/audiobook_maker"
+}
