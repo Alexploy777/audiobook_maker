@@ -26,13 +26,9 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
     def init_ui(self):
         self.comboBox_audio_quality.addItems(Config.AUDIO_BITRATE_CHOICES)  # Добавляем варианты битрейта
         self.comboBox_audio_quality.setCurrentText(Config.AUDIO_BITRATE)  # Устанавливаем текущее значение из Config
-
-        self.comboBox_audio_quality.currentTextChanged.connect(
-            self.update_audio_bitrate)  # connect - при выборе другого битрейта
-
+        self.comboBox_audio_quality.currentTextChanged.connect(self.update_audio_bitrate)  # connect - при выборе другого битрейта
         self.pushButton.clicked.connect(self.add_files)  # connect - для добавления файлов
         self.listWidget.itemSelectionChanged.connect(self.display_metadata)  # При выборе/выделении файла
-
         self.pushButton_2.clicked.connect(self.remove_selected_files)  # connect - для удаления выделенных файлов
         self.pushButton_upload_cover.clicked.connect(self.upload_cover)  # connect - для загрузки обложки пользователя
         self.pushButton_convert.clicked.connect(self.start_conversion)  # connect - для конвертации
