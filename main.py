@@ -77,7 +77,7 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
 
     def upload_cover(self):
         cover_image_path = self.file_manager.upload_cover()
-        self.metadata_manager.show_cover_image_path(cover_image_path, self.label_cover_of_book)
+        self.metadata_manager.show_cover_image_path(cover_image_path)
 
     def update_progress(self, progress):
         self.progressBar.setValue(progress)
