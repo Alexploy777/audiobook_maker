@@ -86,7 +86,9 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         pass
 
     def start_conversion(self):
-        pass
+        output_file_path = self.file_manager.get_output_file_path()
+        print(output_file_path)
+
 
 
 if __name__ == '__main__':

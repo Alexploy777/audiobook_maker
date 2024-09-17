@@ -47,3 +47,12 @@ class FileManager:
             return cover_image_path
         else:
             QMessageBox.warning(None, "Предупреждение", "Изображение не выбрано.")
+
+    def get_output_file_path(self):
+        options = QFileDialog.Options()
+        output_file_path, _ = QFileDialog.getSaveFileName(None, "Выберите куда сохранить аудиокнигу", "",
+                                                          "M4B Files (*.m4b);;All Files (*)", options=options)
+        if output_file_path:
+            return output_file_path
+        else:
+            QMessageBox.warning(None, "Предупреждение", "Не выбран путь для сохранения файла.")
