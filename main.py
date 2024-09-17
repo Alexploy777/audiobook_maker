@@ -7,6 +7,7 @@ from core import MetadataManager  # Подключаем MetadataManager из co
 from data import Config  # Подключаем Config из data/config
 from data import FileManager  # Подключаем FileManager из data/file_manager
 from gui import Ui_MainWindow  # Подключаем класс MainWindow из gui.py
+from core import ConvertThread # Подключаем класс ConvertThread из core/convert_thread.py
 
 
 class AudiobookCreator(QMainWindow, Ui_MainWindow):
@@ -86,9 +87,16 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         pass
 
     def start_conversion(self):
-        output_file_path = self.file_manager.get_output_file_path()
-        print(output_file_path)
+        file_paths = self.file_manager.file_paths() # Возвращает список файлов для конвертации
+        output_path = self.file_manager.get_output_file_path()
+        bitrate = Config.AUDIO_BITRATE()
+        metadata = self.metadata_manager.metadata()
 
+        self.thread = ConvertThread(self.audio_processor, file_paths, output_path, bitrate, metadata)
+        self.thread.progress_updated.connect(self.update_progress)
+        self.thread.conversion_finished.connect(self.conversion_finished)
+
+        self.thread.start()
 
 
 if __name__ == '__main__':
