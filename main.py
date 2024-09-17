@@ -87,10 +87,10 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         pass
 
     def start_conversion(self):
-        file_paths = self.file_manager.file_paths() # Возвращает список файлов для конвертации
+        file_paths = self.file_manager.file_paths # Возвращает список файлов для конвертации
         output_path = self.file_manager.get_output_file_path()
-        bitrate = Config.AUDIO_BITRATE()
-        metadata = self.metadata_manager.metadata()
+        bitrate = Config.AUDIO_BITRATE
+        metadata = self.metadata_manager.metadata
 
         self.thread = ConvertThread(self.audio_processor, file_paths, output_path, bitrate, metadata)
         self.thread.progress_updated.connect(self.update_progress)
