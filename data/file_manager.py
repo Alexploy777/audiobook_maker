@@ -26,7 +26,6 @@ class FileManager:
                     QMessageBox.warning(None, "Предупреждение", f"Файл {path} уже добавлен.")
             if listwidget.count() > 0:
                 listwidget.setCurrentRow(0)  # Выделяется первый элемент списка
-        print(self.file_paths)
 
 
     def remove_files(self, listwidget):
