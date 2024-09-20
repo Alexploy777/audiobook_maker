@@ -19,7 +19,7 @@ class AudioProcessor:
 
         return combined
 
-
+    # точка входа
     def convert_and_combine(self, file_paths, bitrate, update_progress):
         mp3_combined = self.merge_mp3s(file_paths, update_progress)
         with open('mp3_combined.mp3', 'wb') as f:
