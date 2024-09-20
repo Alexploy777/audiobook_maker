@@ -90,7 +90,13 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         file_paths = self.file_manager.file_paths # Возвращает список файлов для конвертации
         output_path = self.file_manager.get_output_file_path()
         bitrate = Config.AUDIO_BITRATE
+
         metadata = self.metadata_manager.metadata
+        metadata['title'] = self.lineEdit_title.text()
+        metadata['artist'] = self.lineEdit_artist.text()
+        metadata['album'] = self.lineEdit_album.text()
+        metadata['year'] = self.lineEdit_year.text()
+        metadata['genre'] = self.lineEdit_genre.text()
 
         self.thread = ConvertThread(self.audio_processor, file_paths=file_paths, output_path=output_path, bitrate=bitrate, metadata=metadata)
         self.thread.progress_updated.connect(self.update_progress)

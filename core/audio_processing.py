@@ -1,6 +1,7 @@
 # core/audio_processing.py
 import os
 
+from mutagen.mp4 import MP4, MP4Cover
 from pydub import AudioSegment
 
 
@@ -30,7 +31,9 @@ class AudioProcessor:
         for temp_file in converted_files:
             os.remove(temp_file)
 
-        return print('готово')
+        # Добавление метаданных и обложки
+        self.add_cover_and_metadata(output_path, metadata, update_progress)
+        update_progress(100)
 
     def convert_file_to_m4b(self, file_path, temp_output, bitrate):
         audio = AudioSegment.from_mp3(file_path)
@@ -39,7 +42,6 @@ class AudioProcessor:
     def combine_files(self, converted_files, output_path, update_progress):
         update_progress(1)
         combined = AudioSegment.empty()
-        total_files = len(converted_files) # можно использовать self.total_progress_bar_steps
 
         for index, file_path in enumerate(converted_files):
             audio = AudioSegment.from_file(file_path, format="mp4")
@@ -48,14 +50,27 @@ class AudioProcessor:
             progress_bar_steps = (index + 1) * self.total_progress_bar_steps
             update_progress(progress_bar_steps)
 
+        update_progress(1)
         combined.export(output_path, format="mp4", codec="aac") # долго, нет индикации в прогресс-баре
 
+    def add_cover_and_metadata(self, output_path, metadata, update_progress):
+        audio = MP4(output_path)
 
+        update_progress(1)
 
+        # Добавление метаданных
+        audio['\xa9nam'] = metadata.get("title")
+        audio['\xa9ART'] = metadata.get("artist")
+        audio['\xa9alb'] = metadata.get("album")
+        audio['\xa9day'] = metadata.get("year")
+        audio['\xa9gen'] = metadata.get("genre")
 
+        update_progress(50)
 
+        if cover_image_bytes := metadata.get('image_data'):
+            cover = MP4Cover(cover_image_bytes, imageformat=MP4Cover.FORMAT_JPEG)
+            audio['covr'] = [cover]
 
+        update_progress(90)
 
-
-
-
+        audio.save()
