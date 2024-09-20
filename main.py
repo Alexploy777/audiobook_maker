@@ -92,7 +92,7 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         bitrate = Config.AUDIO_BITRATE
         metadata = self.metadata_manager.metadata
 
-        self.thread = ConvertThread(self.audio_processor, file_paths, output_path, bitrate, metadata)
+        self.thread = ConvertThread(self.audio_processor, file_paths=file_paths, output_path=output_path, bitrate=bitrate, metadata=metadata)
         self.thread.progress_updated.connect(self.update_progress)
         self.thread.conversion_finished.connect(self.conversion_finished)
 

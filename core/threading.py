@@ -14,7 +14,7 @@ class ConvertThread(QThread):
         self.metadata = metadata
 
     def run(self):
-        self.audio_processor.convert_and_combine(self.file_paths, self.bitrate, self.update_progress)
+        self.audio_processor.convert_and_combine(file_paths=self.file_paths, bitrate=self.bitrate, update_progress=self.update_progress, output_path=self.output_path, metadata=self.metadata)
         self.conversion_finished.emit()
 
     def update_progress(self, progress):
