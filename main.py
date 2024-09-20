@@ -79,6 +79,9 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
     def update_progress(self, progress):
         self.progressBar.setValue(progress)
 
+    def progress_description(self, description):
+        self.label_progress_description.setText(description)
+
     def conversion_finished(self):
         QMessageBox.information(self, "Готово", "Конвертация завершена!")
         self.progressBar.setValue(0)
@@ -100,6 +103,7 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
 
         self.thread = ConvertThread(self.audio_processor, file_paths=file_paths, output_path=output_path, bitrate=bitrate, metadata=metadata)
         self.thread.progress_updated.connect(self.update_progress)
+        self.thread.progress_description.connect(self.progress_description)
         self.thread.conversion_finished.connect(self.conversion_finished)
 
         self.thread.start()

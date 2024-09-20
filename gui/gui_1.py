@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'main_window_test.ui'
+# Form implementation generated from reading ui file 'gui_1.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.9
 #
@@ -29,7 +29,7 @@ class Ui_MainWindow(object):
         self.pushButton.setObjectName("pushButton")
         self.verticalLayout.addWidget(self.pushButton)
         self.listWidget = QtWidgets.QListWidget(self.groupBox_files)
-        self.listWidget.setObjectName("listwidget")
+        self.listWidget.setObjectName("listWidget")
         self.verticalLayout.addWidget(self.listWidget)
         self.pushButton_2 = QtWidgets.QPushButton(self.groupBox_files)
         self.pushButton_2.setObjectName("pushButton_2")
@@ -104,9 +104,9 @@ class Ui_MainWindow(object):
         self.ControlPanel.setObjectName("ControlPanel")
         self.verticalLayout_9 = QtWidgets.QVBoxLayout(self.ControlPanel)
         self.verticalLayout_9.setObjectName("verticalLayout_9")
-        self.label_output_file = QtWidgets.QLabel(self.ControlPanel)
-        self.label_output_file.setObjectName("label_output_file")
-        self.verticalLayout_9.addWidget(self.label_output_file)
+        self.label_progress_description = QtWidgets.QLabel(self.ControlPanel)
+        self.label_progress_description.setObjectName("label_progress_description")
+        self.verticalLayout_9.addWidget(self.label_progress_description)
         self.progressBar = QtWidgets.QProgressBar(self.ControlPanel)
         self.progressBar.setProperty("value", 0)
         self.progressBar.setTextVisible(False)
@@ -167,7 +167,7 @@ class Ui_MainWindow(object):
         self.label_cover_of_book.setText(_translate("MainWindow", "Photo"))
         self.pushButton_upload_cover.setText(_translate("MainWindow", "Загрузить обложку"))
         self.ControlPanel.setTitle(_translate("MainWindow", "Панель управления"))
-        self.label_output_file.setText(_translate("MainWindow", "Имя выходного файла"))
+        self.label_progress_description.setText(_translate("MainWindow", "Имя выходного файла"))
         self.pushButton_stop_and_clean.setText(_translate("MainWindow", "Отменить и очистить"))
         self.pushButton_convert.setText(_translate("MainWindow", "Конвертировать"))
         self.ConversionSettingsPanel.setTitle(_translate("MainWindow", "Панель настроек конвертации"))
