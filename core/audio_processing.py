@@ -7,8 +7,8 @@ from pydub import AudioSegment
 
 class AudioProcessor:
     def __init__(self, ffmpeg_path):
-        current_dir = os.path.dirname(__file__)
-        ffmpeg_path = os.path.join(current_dir, ffmpeg_path)
+        # current_dir = os.path.dirname(__file__)
+        # ffmpeg_path = os.path.join(current_dir, ffmpeg_path)
         AudioSegment.converter = ffmpeg_path
 
         print(ffmpeg_path)
