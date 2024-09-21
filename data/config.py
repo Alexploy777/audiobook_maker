@@ -17,7 +17,7 @@ class Config:
     DEFAULT_GENRE = "Audiobook"
     DEFAULT_AUTHOR = "Unknown"
     DEFAULT_TITLE = "Untitled"
-    FFMPEG_PATH = "external/ffmpeg.exe"
+    FFMPEG_PATH = "external\\ffmpeg.exe"
     FFMPEG_LOG_LEVEL = "info"
     CONFIG_FILE = "config.json"
 
