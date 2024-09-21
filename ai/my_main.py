@@ -6,6 +6,9 @@ os.environ["PATH"] += os.pathsep + os.path.join(os.path.dirname(__file__), "exte
 os.environ["FFMPEG_BINARY"] = os.path.join(os.path.dirname(__file__), "external", "ffmpeg.exe")
 os.environ["FFPROBE_BINARY"] = os.path.join(os.path.dirname(__file__), "external", "ffprobe.exe")
 
+
+
+
 from pydub import AudioSegment
 
 # Абсолютный путь к директории с файлами
