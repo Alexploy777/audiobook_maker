@@ -52,6 +52,7 @@ class ConverterManager:
         # Ждём завершения всех потоков
         self.thread_pool.waitForDone()
 
+
 class Combine:
     def __init__(self, output_file):
         self.output_file = output_file
@@ -78,5 +79,4 @@ if __name__ == '__main__':
 
     combine = Combine(output_file)
     combine.combine_files(temp_files_list)
-    print('готово')
-
+    print('Done')
