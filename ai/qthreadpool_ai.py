@@ -52,17 +52,19 @@ class ConverterManager:
         # Ждём завершения всех потоков
         self.thread_pool.waitForDone()
 
-# class Combine:
-#     def __init__(self):
-#         pass
-#
-#
-#     def combine_files(self, converted_files, output_path):
-#         combined = AudioSegment.empty()
-#         for index, file_path in enumerate(converted_files):
-#             audio = AudioSegment.from_file(file_path, format="mp4")
-#             combined += audio
-#         combined.export(output_path, format="mp4", codec="aac")
+class Combine:
+    def __init__(self, output_file):
+        self.output_file = output_file
+
+    def combine_files(self, temp_files_list):
+        combined = AudioSegment.empty()
+        for index, file_path in enumerate(temp_files_list):
+            audio = AudioSegment.from_file(file_path, format="mp4")
+            combined += audio
+        combined.export(self.output_file, format="mp4", codec="aac")
+
+        for temp_file in temp_files_list:
+            os.remove(temp_file)
 
 
 if __name__ == '__main__':
@@ -72,10 +74,9 @@ if __name__ == '__main__':
 
     converter_manager = ConverterManager(output_dir_name)
     converter_manager.start(input_list)
+    temp_files_list = converter_manager.output_temp_files
 
-    # Здесь output_temp_files будет содержать пути в том же порядке, что и input_list
-    print(converter_manager.output_temp_files)
-
-    # combine = Combine()
-    # combine.combine_files()
+    combine = Combine(output_file)
+    combine.combine_files(temp_files_list)
+    print('готово')
 
