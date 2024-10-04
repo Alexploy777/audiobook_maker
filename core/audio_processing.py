@@ -1,6 +1,6 @@
 # core/audio_processing.py
 import os
-
+os.environ['PATH'] += os.pathsep + os.path.abspath('external')
 from mutagen.mp4 import MP4, MP4Cover
 from pydub import AudioSegment
 

@@ -23,8 +23,8 @@ AudioSegment.converter = ffmpeg_exec
 AudioSegment.ffprobe = ffprobe_exec
 
 # Пути к файлам
-input_file = os.path.join(base_dir, 'files', '1.mp3')
-output_file = os.path.join(base_dir, 'files', '1.m4b')
+input_file = os.path.join(base_dir, 'mp3', '1.mp3')
+output_file = os.path.join(base_dir, 'mp3', '1.m4b')
 
 def convert_mp3_to_m4b(input_path, output_path):
     # Загружаем MP3 файл
