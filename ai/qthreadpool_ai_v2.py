@@ -77,13 +77,15 @@ class Combine:
 
     def combine_files(self, temp_files_list):
         combined = AudioSegment.empty()
-        for index, file_path in enumerate(temp_files_list):
-            audio = AudioSegment.from_file(file_path, format="mp4")
-            combined += audio
-        combined.export(self.output_file, format="mp4", codec="aac")
-
-        for temp_file in temp_files_list:
-            os.remove(temp_file)
+        try:
+            for index, file_path in enumerate(temp_files_list):
+                audio = AudioSegment.from_file(file_path, format="mp4")
+                combined += audio
+            combined.export(self.output_file, format="mp4", codec="aac")
+        finally:
+            for temp_file in temp_files_list:
+                if os.path.exists(temp_file):
+                    os.remove(temp_file)
 
 
 if __name__ == '__main__':
