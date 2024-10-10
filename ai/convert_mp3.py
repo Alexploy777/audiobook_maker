@@ -1,6 +1,9 @@
 import os
 from PyQt5.QtCore import QRunnable, QThreadPool, pyqtSlot, QObject, pyqtSignal
 from pydub import AudioSegment
+from time import time
+
+from ai.merge_m4b import merge_m4b_files
 
 os.environ['PATH'] += os.pathsep + os.path.abspath('external')
 
@@ -47,17 +50,24 @@ class ConverterManager(QObject):
 
     def start(self, input_list):
         self.output_temp_files_list = [None] * len(input_list)  # Инициализируем список с None для каждого файла
-        self.total_tasks = len(input_list)
-        self.finished_count = 0
 
         for index, file in enumerate(input_list):
             output_temp_file = self.get_output_file_path(file)
             converter = Converter(file, output_temp_file, self.output_temp_files_list, index)
             self.thread_pool.start(converter)
 
-        # # Ждём завершения всех потоков
+        # Ждём завершения всех потоков
         self.thread_pool.waitForDone()
 
+        print('Начинаем объединять файлы..')
+
+        output_file = r'final2.m4b'
+        merge_m4b_files(self.output_temp_files_list, output_file)
+
+        # Создаем объект Combine
+        # print(self.output_temp_files_list)
+        # combine = Combine(output_file)
+        # combine.combine_files(self.output_temp_files_list)
 
 
 class Combine:
@@ -81,12 +91,8 @@ if __name__ == '__main__':
     input_list = ['mp3/1.mp3', 'mp3/2.mp3', 'mp3/3.mp3', 'mp3/4.mp3']
     output_dir_name = 'temp'
     output_file = 'final.m4b'
-
+    start_time = time()
     converter_manager = ConverterManager(output_dir_name)
     converter_manager.start(input_list)
-    temp_files_list = converter_manager.output_temp_files_list
-
-    combine = Combine(output_file)
-    combine.combine_files(temp_files_list)
     print('Работа завершена!')
-
+    print(time() - start_time)
