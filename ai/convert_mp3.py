@@ -4,6 +4,7 @@ from pydub import AudioSegment
 from time import time
 
 from ai.merge_m4b import merge_m4b_files
+from ai.merge_m4b_oop import M4BMerger
 
 os.environ['PATH'] += os.pathsep + os.path.abspath('external')
 
@@ -48,7 +49,7 @@ class ConverterManager(QObject):
         output_name = os.path.join(str(full_output_dir), name + '.m4b')
         return output_name
 
-    def start(self, input_list):
+    def start(self, input_list, output_file):
         self.output_temp_files_list = [None] * len(input_list)  # Инициализируем список с None для каждого файла
 
         for index, file in enumerate(input_list):
@@ -61,8 +62,11 @@ class ConverterManager(QObject):
 
         print('Начинаем объединять файлы..')
 
-        output_file = r'final2.m4b'
-        merge_m4b_files(self.output_temp_files_list, output_file)
+        merger = M4BMerger(self.output_temp_files_list, output_file)
+        merger.run()
+
+        # output_file = r'final2.m4b'
+        # merge_m4b_files(self.output_temp_files_list, output_file)
 
         # Создаем объект Combine
         # print(self.output_temp_files_list)
@@ -93,6 +97,6 @@ if __name__ == '__main__':
     output_file = 'final.m4b'
     start_time = time()
     converter_manager = ConverterManager(output_dir_name)
-    converter_manager.start(input_list)
+    converter_manager.start(input_list, output_file)
     print('Работа завершена!')
     print(time() - start_time)
