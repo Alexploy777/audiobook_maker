@@ -1,12 +1,53 @@
 import os
+import subprocess
 from PyQt5.QtCore import QRunnable, QThreadPool, pyqtSlot, QObject, pyqtSignal
 from pydub import AudioSegment
 from time import time
 
-from ai.merge_m4b import merge_m4b_files
-from ai.merge_m4b_oop import M4BMerger
-
 os.environ['PATH'] += os.pathsep + os.path.abspath('external')
+
+
+class M4BMerger:
+    def __init__(self, input_files, output_file):
+        self.input_files = input_files  # Список m4b файлов
+        self.output_file = output_file  # Финальный выходной файл
+        self.list_file = 'files.txt'  # Временный файл со списком входных файлов
+
+    def create_file_list(self):
+        """Создаем временный файл со списком входных m4b файлов."""
+        with open(self.list_file, 'w') as f:
+            for file in self.input_files:
+                f.write(f"file '{file}'\n")
+
+    def merge_files(self):
+        """Объединяем m4b файлы с помощью ffmpeg."""
+        command = [
+            'ffmpeg',
+            '-f', 'concat',  # формат ввода: список файлов
+            '-safe', '0',  # разрешаем использовать небезопасные символы в путях
+            '-i', self.list_file,  # вводим файл со списком
+            '-c', 'copy',  # копируем содержимое без перекодирования
+            '-y',  # перезаписываем выходной файл без предупреждения
+            self.output_file  # выходной файл
+        ]
+
+        try:
+            # Запускаем процесс ffmpeg
+            subprocess.run(command, check=True)
+            print(f'Файлы успешно объединены в {self.output_file}')
+        except subprocess.CalledProcessError as e:
+            print(f'Ошибка при объединении файлов: {e}')
+
+    def clean_up(self):
+        """Удаляем временные файлы."""
+        if os.path.exists(self.list_file):
+            os.remove(self.list_file)
+
+    def run(self):
+        """Основной метод для выполнения всех шагов."""
+        self.create_file_list()
+        self.merge_files()
+        self.clean_up()
 
 
 class Converter(QRunnable):

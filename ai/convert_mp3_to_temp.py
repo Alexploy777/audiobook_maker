@@ -3,8 +3,6 @@ from PyQt5.QtCore import QRunnable, QThreadPool, pyqtSlot, QObject, pyqtSignal
 from pydub import AudioSegment
 from time import time
 
-from ai.merge_m4b import merge_m4b_files
-from ai.merge_m4b_oop import M4BMerger
 
 os.environ['PATH'] += os.pathsep + os.path.abspath('external')
 
@@ -65,13 +63,9 @@ class ConverterManager(QObject):
         # Ждём завершения всех потоков
         self.thread_pool.waitForDone()
 
-        print('Начинаем объединять файлы..')
+        print(self.output_temp_files_list)
 
-        temp_files_list = self.output_temp_files_list
-        merger = M4BMerger(temp_files_list, output_file)
-        merger.run()
 
-        self.del_temp_m4b_files(temp_files_list)
 
 
 if __name__ == '__main__':
