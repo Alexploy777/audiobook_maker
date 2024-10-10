@@ -5,10 +5,6 @@ from pydub import AudioSegment
 os.environ['PATH'] += os.pathsep + os.path.abspath('external')
 
 
-class ConverterSignals(QObject):
-    finished = pyqtSignal()  # Сигнал, когда задача завершена
-
-
 class Converter(QRunnable):
     def __init__(self, file, output_temp_file, output_temp_files_list, index):
         super().__init__()
@@ -16,13 +12,11 @@ class Converter(QRunnable):
         self.output_temp_file = output_temp_file
         self.output_temp_files_list = output_temp_files_list
         self.index = index
-        self.signals = ConverterSignals()
 
     @pyqtSlot()
     def run(self):
         output_file = self.convert_mp3_to_m4b(self.input_path, self.output_temp_file)
         self.output_temp_files_list[self.index] = output_file  # Запись результата по индексу
-        self.signals.finished.emit()  # Отправляем сигнал о завершении
 
     def convert_mp3_to_m4b(self, input_path, output_path):
         try:
@@ -36,15 +30,11 @@ class Converter(QRunnable):
 
 
 class ConverterManager(QObject):
-    all_tasks_finished = pyqtSignal()  # Сигнал, когда все задачи завершены
-
     def __init__(self, output_dir_name):
         super().__init__()
         self.output_dir_name = output_dir_name
         self.thread_pool = QThreadPool()
         self.output_temp_files_list = []  # Список для хранения путей к выходным файлам
-        self.finished_count = 0
-        self.total_tasks = 0
 
     def get_output_file_path(self, input_path):
         temp = os.path.abspath(input_path)
@@ -63,17 +53,10 @@ class ConverterManager(QObject):
         for index, file in enumerate(input_list):
             output_temp_file = self.get_output_file_path(file)
             converter = Converter(file, output_temp_file, self.output_temp_files_list, index)
-            converter.signals.finished.connect(self.on_task_finished)  # Подключаем сигнал
             self.thread_pool.start(converter)
 
         # # Ждём завершения всех потоков
-        # self.thread_pool.waitForDone()
-
-    def on_task_finished(self):
-        self.finished_count += 1
-        if self.finished_count == self.total_tasks:
-            print("Все задачи завершены!")
-            self.all_tasks_finished.emit()  # Отправляем сигнал о завершении всех задач
+        self.thread_pool.waitForDone()
 
 
 class Combine:
@@ -99,15 +82,10 @@ if __name__ == '__main__':
     output_file = 'final.m4b'
 
     converter_manager = ConverterManager(output_dir_name)
-
-    def on_all_tasks_done():
-        print('Конвертация завершена, начинается объединение файлов...')
-        combine = Combine(output_file)
-        combine.combine_files(converter_manager.output_temp_files_list)
-        print('Объединение завершено. Done')
-
-    # Подключаем завершение всех задач к функции объединения файлов
-    converter_manager.all_tasks_finished.connect(on_all_tasks_done)
-
-    # Стартуем конвертацию
     converter_manager.start(input_list)
+    temp_files_list = converter_manager.output_temp_files_list
+
+    combine = Combine(output_file)
+    combine.combine_files(temp_files_list)
+    print('Работа завершена!')
+
