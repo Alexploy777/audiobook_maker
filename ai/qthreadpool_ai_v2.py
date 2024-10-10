@@ -1,8 +1,7 @@
 import os
 from PyQt5.QtCore import QRunnable, QThreadPool, pyqtSlot
 from pydub import AudioSegment
-
-from ai.my_main import output_file
+# from PyQt5.QtCore import QFutureWatcher
 
 os.environ['PATH'] += os.pathsep + os.path.abspath('external')
 
@@ -21,11 +20,14 @@ class Converter(QRunnable):
         self.output_temp_files_list[self.index] = output_file  # Запись результата по индексу
 
     def convert_mp3_to_m4b(self, input_path, output_path):
-        audio = AudioSegment.from_mp3(input_path)
-        # output_full_path = self.get_output_file_path(input_path)
-        audio.export(output_path, format="mp4", codec="aac")
-        print(f"Файл успешно конвертирован: {output_path}")
-        return output_path
+        try:
+            audio = AudioSegment.from_mp3(input_path)
+            audio.export(output_path, format="mp4", codec="aac")
+            print(f"Файл успешно конвертирован: {output_path}")
+            return output_path
+        except Exception as e:
+            print(f"Ошибка при конвертации файла {input_path}: {e}")
+            return None
 
 
 class ConverterManager:
@@ -33,6 +35,7 @@ class ConverterManager:
         self.output_dir_name = output_dir_name
         self.thread_pool = QThreadPool()
         self.output_temp_files_list = []  # Список для хранения путей к выходным файлам
+        # self.watcher = QFutureWatcher()
 
     def get_output_file_path(self, input_path):
         '''
@@ -50,13 +53,22 @@ class ConverterManager:
 
     def start(self, input_list):
         self.output_temp_files_list = [None] * len(input_list)  # Инициализируем список с None для каждого файла
+        futures = []
         for index, file in enumerate(input_list):
             output_temp_file = self.get_output_file_path(file)
             converter = Converter(file, output_temp_file, self.output_temp_files_list, index)
-            self.thread_pool.start(converter)
+            # self.thread_pool.start(converter)
+            future = self.thread_pool.start(converter)
+            futures.append(future)
 
         # Ждём завершения всех потоков
         self.thread_pool.waitForDone()
+
+        # self.watcher.setFuture(futures[-1])  # Отслеживаем последний future
+        # self.watcher.finished.connect(self.on_conversion_done)
+
+    def on_conversion_done(self):
+        print("Конвертация всех файлов завершена!")
 
 
 class Combine:
