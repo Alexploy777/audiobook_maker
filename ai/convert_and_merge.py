@@ -33,7 +33,7 @@ class M4BMerger:
 
         try:
             # Запускаем процесс ffmpeg
-            subprocess.run(command, check=True)
+            subprocess.run(command, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             print(f'Файлы успешно объединены в {self.output_file}')
         except subprocess.CalledProcessError as e:
             print(f'Ошибка при объединении файлов: {e}')
