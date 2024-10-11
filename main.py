@@ -101,6 +101,8 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         metadata['year'] = self.lineEdit_year.text()
         metadata['genre'] = self.lineEdit_genre.text()
 
+        # на этом этапе будем передавать аргументы и запускать конвертацию!!!
+
         self.thread = ConvertThread(self.audio_processor, file_paths=file_paths, output_path=output_path, bitrate=bitrate, metadata=metadata)
         self.thread.progress_updated.connect(self.update_progress)
         self.thread.progress_description.connect(self.progress_description)

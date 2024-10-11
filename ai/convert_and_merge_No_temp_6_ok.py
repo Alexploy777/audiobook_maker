@@ -21,7 +21,7 @@ class M4BMerger:
                 for file_data in self.input_files:
                     if file_data:
                         temp_file.write(f"file '{file_data.name}'\n")
-
+            print(temp_file.name)
             ffmpeg_command = [
                 'ffmpeg',
                 '-f', 'concat',  # формат ввода: список файлов
