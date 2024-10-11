@@ -76,6 +76,8 @@ class Converter(QRunnable):
             audio.export(output_buffer.name, format="mp4", codec="aac")
             output_buffer.close()  # Явно закрываем временный файл
             print(f"Файл успешно конвертирован: {input_path}")
+
+
             return output_buffer
 
         except Exception as e:
@@ -106,15 +108,15 @@ class ConverterManager(QObject):
 
         print('Начинаем объединять файлы..')
 
-        temp_files_list = self.output_temp_files_list
-        merger = M4BMerger(temp_files_list, output_file)
-        merger.run()
-
-        # Удаление временных файлов после объединения
-        for temp_file in temp_files_list:
-            if temp_file:
-                temp_file.close()  # Явно закрываем временный файл
-                os.remove(temp_file.name)  # Удаляем временный файл
+        # temp_files_list = self.output_temp_files_list
+        # merger = M4BMerger(temp_files_list, output_file)
+        # merger.run()
+        #
+        # # Удаление временных файлов после объединения
+        # for temp_file in temp_files_list:
+        #     if temp_file:
+        #         temp_file.close()  # Явно закрываем временный файл
+        #         os.remove(temp_file.name)  # Удаляем временный файл
 
 
 if __name__ == '__main__':
