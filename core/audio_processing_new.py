@@ -9,9 +9,9 @@ import tempfile
 os.environ['PATH'] += os.pathsep + os.path.abspath('external')
 
 class ConverterSignals(QObject):
-    conversion_finished = pyqtSignal()  # Сигнал об окончании конвертации
-    merging_started = pyqtSignal()  # Сигнал о начале объединения файлов
-    process_completed = pyqtSignal()  # Сигнал об окончании всей работы
+    # conversion_finished = pyqtSignal()  # Сигнал об окончании конвертации
+    # merging_started = pyqtSignal()  # Сигнал о начале объединения файлов
+    # process_completed = pyqtSignal()  # Сигнал об окончании всей работы
     progress_bar_signal = pyqtSignal(int)  # Сигнал progressBar
 
 
@@ -56,9 +56,7 @@ class Converter(QRunnable):
         self.input_path = file
         self.output_temp_files_list = output_temp_files_list
         self.index = index
-        self.signals = ConverterSignals() # объект сигналов
 
-        self.progress = index * 100 / len(output_temp_files_list)
 
     @pyqtSlot()
     def run(self):
@@ -72,9 +70,6 @@ class Converter(QRunnable):
             audio.export(output_buffer.name, format="mp4", codec="aac")
             output_buffer.close()  # Явно закрываем временный файл
             print(f"Файл успешно конвертирован: {input_path}")
-
-            self.signals.progress_bar_signal.emit(self.progress)
-
             return output_buffer
 
         except Exception as e:
