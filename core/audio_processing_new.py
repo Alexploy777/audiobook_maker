@@ -1,9 +1,8 @@
 import os
 import subprocess
-import traceback
-
-from PyQt5.QtCore import QRunnable, QThreadPool, pyqtSlot, QObject, pyqtSignal
+from PyQt5.QtCore import QRunnable, QThreadPool, pyqtSlot, QObject
 from pydub import AudioSegment
+from io import BytesIO
 from time import time
 import tempfile
 
@@ -45,29 +44,17 @@ class M4BMerger:
         self.merge_files()
 
 
-class ConverterSignals(QObject):
-    finished = pyqtSignal()  # Сигнал завершения работы
-
 class Converter(QRunnable):
     def __init__(self, file, output_temp_files_list, index):
         super().__init__()
         self.input_path = file
         self.output_temp_files_list = output_temp_files_list
         self.index = index
-        self.signals = ConverterSignals()  # Создаем объект с сигналами
 
     @pyqtSlot()
     def run(self):
-        try:
-            print(f"Запуск конвертации для файла {self.input_path}")  # Отладочное сообщение
-            output_file = self.convert_mp3_to_m4b(self.input_path)
-            self.output_temp_files_list[self.index] = output_file  # Запись результата по индексу
-            print(f"Конвертация завершена для файла {self.input_path}")  # Отладочное сообщение
-            self.signals.finished.emit()  # Излучаем сигнал по завершению работы
-            print(f"Сигнал завершения конвертации отправлен для файла {self.input_path}")  # Отладочное сообщение
-        except Exception as e:
-            print(f"Ошибка в потоке конвертации для файла {self.input_path}: {e}")
-            traceback.print_exc()  # Выводим полное сообщение об ошибке
+        output_file = self.convert_mp3_to_m4b(self.input_path)
+        self.output_temp_files_list[self.index] = output_file  # Запись результата по индексу
 
     def convert_mp3_to_m4b(self, input_path):
         try:
@@ -81,49 +68,34 @@ class Converter(QRunnable):
             print(f"Ошибка при конвертации файла {input_path}: {e}")
             return None
 
-class ConverterManager(QObject):
-    conversion_finished = pyqtSignal()  # Сигнал об окончании конвертации
-    merging_started = pyqtSignal()  # Сигнал о начале объединения файлов
-    process_completed = pyqtSignal()  # Сигнал об окончании всей работы
 
+class ConverterManager(QObject):
     def __init__(self):
         super().__init__()
         self.thread_pool = QThreadPool()
         self.output_temp_files_list = []  # Список для хранения временных файлов аудиофайлов
-        self.remaining_tasks = 0  # Количество оставшихся задач
 
     def start(self, input_list, output_file):
-        self.output_file = output_file  # сохраняем output_file в атрибут
-        self.output_temp_files_list = [None] * len(input_list)
-        self.remaining_tasks = len(input_list)
+        self.output_temp_files_list = [None] * len(input_list)  # Инициализируем список с None для каждого файла
 
         for index, file in enumerate(input_list):
             converter = Converter(file, self.output_temp_files_list, index)
-            converter.signals.finished.connect(self.on_task_finished)
-            print(f"Запускаем конвертер для файла: {file}")
             self.thread_pool.start(converter)
 
-    def on_task_finished(self):
-        self.remaining_tasks -= 1
-        print(f"Задача завершена, осталось задач: {self.remaining_tasks}")
-        if self.remaining_tasks == 0:
-            self.thread_pool.waitForDone()  # Ждем завершения всех потоков
-            self.conversion_finished.emit()
-            print("Все задачи завершены, начинаем объединение файлов.")
-            self.merge_files()
+        # Ждём завершения всех потоков
+        self.thread_pool.waitForDone()
 
-    def merge_files(self):
-        self.merging_started.emit()
-        merger = M4BMerger(self.output_temp_files_list, self.output_file)  # Используем self.output_file
+        print('Начинаем объединять файлы..')
+
+        temp_files_list = self.output_temp_files_list
+        merger = M4BMerger(temp_files_list, output_file)
         merger.run()
 
-        for temp_file in self.output_temp_files_list:
+        # Удаление временных файлов после объединения
+        for temp_file in temp_files_list:
             if temp_file:
-                temp_file.close()
-                os.remove(temp_file.name)
-
-        self.process_completed.emit()
-        print('Работа завершена!')
+                temp_file.close()  # Явно закрываем временный файл
+                os.remove(temp_file.name)  # Удаляем временный файл
 
 
 if __name__ == '__main__':
