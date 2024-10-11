@@ -2,7 +2,8 @@
 import sys
 from PyQt5.QtWidgets import QMainWindow, QApplication, QMessageBox  # Импортируем класс QMainWindow и QApplication
 
-from core import AudioProcessor  # Подключаем AudioProcessor из core/audio_processing.py
+# from core import AudioProcessor  # Подключаем AudioProcessor из core/audio_processing.py
+from core import ConverterManager
 from core import MetadataManager  # Подключаем MetadataManager из core/metadata.py
 from data import Config  # Подключаем Config из data/config
 from data import FileManager  # Подключаем FileManager из data/file_manager
@@ -20,7 +21,7 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
 
         self.file_manager = FileManager()
         self.metadata_manager = MetadataManager(self.label_cover_of_book)
-        self.audio_processor = AudioProcessor(ffmpeg_path=Config.FFMPEG_PATH)  # Укажите путь к ffmpeg
+        # self.audio_processor = AudioProcessor(ffmpeg_path=Config.FFMPEG_PATH)  # Укажите путь к ffmpeg
 
         self.init_ui()
 
@@ -102,13 +103,19 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         metadata['genre'] = self.lineEdit_genre.text()
 
         # на этом этапе будем передавать аргументы и запускать конвертацию!!!
+        # self.audio_processor, file_paths=file_paths, output_path=output_path, bitrate=bitrate, metadata=metadata
 
-        self.thread = ConvertThread(self.audio_processor, file_paths=file_paths, output_path=output_path, bitrate=bitrate, metadata=metadata)
-        self.thread.progress_updated.connect(self.update_progress)
-        self.thread.progress_description.connect(self.progress_description)
-        self.thread.conversion_finished.connect(self.conversion_finished)
+        converter_manager = ConverterManager()
+        converter_manager.start(file_paths, output_path)
 
-        self.thread.start()
+
+
+        # self.thread = ConvertThread(self.audio_processor, file_paths=file_paths, output_path=output_path, bitrate=bitrate, metadata=metadata)
+        # self.thread.progress_updated.connect(self.update_progress)
+        # self.thread.progress_description.connect(self.progress_description)
+        # self.thread.conversion_finished.connect(self.conversion_finished)
+        #
+        # self.thread.start()
 
 
 if __name__ == '__main__':
