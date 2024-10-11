@@ -1,6 +1,6 @@
 import os
 import subprocess
-from PyQt5.QtCore import QRunnable, QThreadPool, pyqtSlot, QObject, pyqtSignal
+from PyQt5.QtCore import QRunnable, QThreadPool, pyqtSlot, QObject, pyqtSignal, QMetaObject, Qt, Q_ARG
 from pydub import AudioSegment
 from io import BytesIO
 from time import time
@@ -83,7 +83,7 @@ class Converter(QRunnable):
             return None
 
 
-class ConverterManager():
+class ConverterManager(QObject):
     def __init__(self):
         super().__init__()
         self.thread_pool = QThreadPool()
@@ -96,7 +96,9 @@ class ConverterManager():
 
         for index, file in enumerate(input_list):
             converter = Converter(file, self.output_temp_files_list, index, self.total_files)
-            converter.signals.progress_bar_signal.connect(progressBar.setValue)  # Подключаем сигнал к обновлению прогресс-бара
+            # converter.signals.progress_bar_signal.connect(progressBar.setValue)  # Подключаем сигнал к обновлению прогресс-бара
+            converter.signals.progress_bar_signal.connect(lambda value: QMetaObject.invokeMethod(progressBar, "setValue", Qt.QueuedConnection, Q_ARG(int, value))
+            )
             self.thread_pool.start(converter)
 
         # Ждём завершения всех потоков
