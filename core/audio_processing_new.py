@@ -8,6 +8,7 @@ import tempfile
 
 os.environ['PATH'] += os.pathsep + os.path.abspath('external')
 
+
 class ConverterSignals(QObject):
     # conversion_finished = pyqtSignal()  # Сигнал об окончании конвертации
     # merging_started = pyqtSignal()  # Сигнал о начале объединения файлов
@@ -51,14 +52,13 @@ class M4BMerger:
 
 
 class Converter(QRunnable):
-    def __init__(self, file, output_temp_files_list, index, total_files):
+    def __init__(self, file, output_temp_files_list, index, total_files, progressBar):
         super().__init__()
         self.input_path = file
         self.output_temp_files_list = output_temp_files_list
         self.index = index
         self.signals = ConverterSignals()  # объект сигналов
-        self.progress = (self.index + 1) * 100 / total_files  # Прогресс в процентах
-
+        self.progress = int((self.index + 1) * 100 / total_files)  # Прогресс в процентах
 
     @pyqtSlot()
     def run(self):
@@ -95,14 +95,14 @@ class ConverterManager(QObject):
         self.total_files = len(input_list)
 
         for index, file in enumerate(input_list):
-            converter = Converter(file, self.output_temp_files_list, index, self.total_files)
+            converter = Converter(file, self.output_temp_files_list, index, self.total_files, progressBar)
             # converter.signals.progress_bar_signal.connect(progressBar.setValue)  # Подключаем сигнал к обновлению прогресс-бара
-            converter.signals.progress_bar_signal.connect(lambda value: QMetaObject.invokeMethod(progressBar, "setValue", Qt.QueuedConnection, Q_ARG(int, value))
-            )
+            converter.signals.progress_bar_signal.connect(
+                lambda value: QMetaObject.invokeMethod(progressBar, "setValue", Qt.QueuedConnection, Q_ARG(int, value)))
             self.thread_pool.start(converter)
 
         # Ждём завершения всех потоков
-        self.thread_pool.waitForDone()
+        # self.thread_pool.waitForDone()
 
         print('Начинаем объединять файлы..')
 
