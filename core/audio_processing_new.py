@@ -51,17 +51,23 @@ class M4BMerger:
 
 
 class Converter(QRunnable):
-    def __init__(self, file, output_temp_files_list, index):
+    def __init__(self, file, output_temp_files_list, index, total_files):
         super().__init__()
         self.input_path = file
         self.output_temp_files_list = output_temp_files_list
         self.index = index
+        self.signals = ConverterSignals()  # объект сигналов
+        self.progress = (self.index + 1) * 100 / total_files  # Прогресс в процентах
 
 
     @pyqtSlot()
     def run(self):
         output_file = self.convert_mp3_to_m4b(self.input_path)
         self.output_temp_files_list[self.index] = output_file  # Запись результата по индексу
+
+        # Излучаем сигнал для обновления прогресс-бара
+        self.signals.progress_bar_signal.emit(self.progress)
+        print(f"Прогресс: {self.progress}%")
 
     def convert_mp3_to_m4b(self, input_path):
         try:
@@ -82,11 +88,15 @@ class ConverterManager():
         super().__init__()
         self.thread_pool = QThreadPool()
         self.output_temp_files_list = []  # Список для хранения временных файлов аудиофайлов
+        self.total_files = 0
 
-    def start(self, input_list, output_file):
+    def start(self, input_list, output_file, progressBar):
         self.output_temp_files_list = [None] * len(input_list)  # Инициализируем список с None для каждого файла
+        self.total_files = len(input_list)
+
         for index, file in enumerate(input_list):
-            converter = Converter(file, self.output_temp_files_list, index)
+            converter = Converter(file, self.output_temp_files_list, index, self.total_files)
+            converter.signals.progress_bar_signal.connect(progressBar.setValue)  # Подключаем сигнал к обновлению прогресс-бара
             self.thread_pool.start(converter)
 
         # Ждём завершения всех потоков

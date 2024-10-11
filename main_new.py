@@ -23,6 +23,8 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.metadata_manager = MetadataManager(self.label_cover_of_book)
         self.audio_processor = AudioProcessor(ffmpeg_path=Config.FFMPEG_PATH)  # Укажите путь к ffmpeg
 
+        self.progressBar.setValue(0)  # Устанавливаем начальное значение
+
         self.init_ui()
 
     def init_ui(self):
@@ -107,8 +109,7 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         # на этом этапе будем передавать аргументы и запускать конвертацию!!!
         # self.audio_processor, file_paths=file_paths, output_path=output_path, bitrate=bitrate, metadata=metadata
 
-        self.thread = ConvertThread(file_paths=file_paths, output_path=output_path, bitrate=bitrate, metadata=metadata)
-        self.thread.progress_updated.connect(self.update_progress)
+        self.thread = ConvertThread(file_paths=file_paths, output_path=output_path, bitrate=bitrate, metadata=metadata, progressBar=self.progressBar)
         self.thread.start()
 
 
