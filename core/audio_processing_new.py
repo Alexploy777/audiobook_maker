@@ -1,12 +1,18 @@
 import os
 import subprocess
-from PyQt5.QtCore import QRunnable, QThreadPool, pyqtSlot, QObject
+from PyQt5.QtCore import QRunnable, QThreadPool, pyqtSlot, QObject, pyqtSignal
 from pydub import AudioSegment
 from io import BytesIO
 from time import time
 import tempfile
 
 os.environ['PATH'] += os.pathsep + os.path.abspath('external')
+
+class ConverterSignals(QObject):
+    conversion_finished = pyqtSignal()  # Сигнал об окончании конвертации
+    merging_started = pyqtSignal()  # Сигнал о начале объединения файлов
+    process_completed = pyqtSignal()  # Сигнал об окончании всей работы
+    progress_bar_signal = pyqtSignal(int)  # Сигнал progressBar
 
 
 class M4BMerger:
@@ -50,6 +56,9 @@ class Converter(QRunnable):
         self.input_path = file
         self.output_temp_files_list = output_temp_files_list
         self.index = index
+        self.signals = ConverterSignals() # объект сигналов
+
+        self.progress = index * 100 / len(output_temp_files_list)
 
     @pyqtSlot()
     def run(self):
@@ -63,13 +72,17 @@ class Converter(QRunnable):
             audio.export(output_buffer.name, format="mp4", codec="aac")
             output_buffer.close()  # Явно закрываем временный файл
             print(f"Файл успешно конвертирован: {input_path}")
+
+            self.signals.progress_bar_signal.emit(self.progress)
+
             return output_buffer
+
         except Exception as e:
             print(f"Ошибка при конвертации файла {input_path}: {e}")
             return None
 
 
-class ConverterManager(QObject):
+class ConverterManager():
     def __init__(self):
         super().__init__()
         self.thread_pool = QThreadPool()
@@ -77,7 +90,6 @@ class ConverterManager(QObject):
 
     def start(self, input_list, output_file):
         self.output_temp_files_list = [None] * len(input_list)  # Инициализируем список с None для каждого файла
-
         for index, file in enumerate(input_list):
             converter = Converter(file, self.output_temp_files_list, index)
             self.thread_pool.start(converter)
