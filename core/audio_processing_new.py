@@ -98,9 +98,9 @@ class ConverterManager(QObject):
 
         for index, file in enumerate(input_list):
             converter = Converter(file, self.output_temp_files_list, index, self.total_files, progressBar)
-            # converter.signals.progress_bar_signal.connect(progressBar.setValue)  # Подключаем сигнал к обновлению прогресс-бара
-            converter.signals.progress_bar_signal.connect(
-                lambda value: QMetaObject.invokeMethod(progressBar, "setValue", Qt.QueuedConnection, Q_ARG(int, value)))
+            converter.signals.progress_bar_signal.connect(progressBar.setValue)  # Подключаем сигнал к обновлению прогресс-бара
+            # converter.signals.progress_bar_signal.connect(
+            #     lambda value: QMetaObject.invokeMethod(progressBar, "setValue", Qt.QueuedConnection, Q_ARG(int, value)))
             self.thread_pool.start(converter)
 
         # Ждём завершения всех потоков
