@@ -16,39 +16,39 @@ class ConverterSignals(QObject):
     progress_bar_signal = pyqtSignal(int)  # Сигнал progressBar
 
 
-class M4BMerger:
-    def __init__(self, input_files, output_file):
-        self.input_files = input_files  # Список буферов аудиофайлов
-        self.output_file = output_file  # Финальный выходной файл
-
-    def merge_files(self):
-        """Объединяем m4b файлы с помощью ffmpeg, используя временный список файлов."""
-        try:
-            with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_file:
-                for file_data in self.input_files:
-                    if file_data:
-                        temp_file.write(f"file '{file_data.name}'\n")
-            print(temp_file.name)
-            ffmpeg_command = [
-                'ffmpeg',
-                '-f', 'concat',  # формат ввода: список файлов
-                '-safe', '0',  # разрешаем использовать небезопасные символы в путях
-                '-i', temp_file.name,  # ввод через временный файл списка
-                '-c', 'copy',  # копируем содержимое без перекодирования
-                '-y',  # перезаписываем выходной файл без предупреждения
-                self.output_file  # выходной файл
-            ]
-
-            subprocess.run(ffmpeg_command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            print(f'Файлы успешно объединены в {self.output_file}')
-        except subprocess.CalledProcessError as e:
-            print(f'Ошибка при объединении файлов: {e}')
-        finally:
-            os.remove(temp_file.name)  # Удаляем временный файл списка после завершения работы
-
-    def run(self):
-        """Основной метод для выполнения всех шагов."""
-        self.merge_files()
+# class M4BMerger:
+#     def __init__(self, input_files, output_file):
+#         self.input_files = input_files  # Список буферов аудиофайлов
+#         self.output_file = output_file  # Финальный выходной файл
+#
+#     def merge_files(self):
+#         """Объединяем m4b файлы с помощью ffmpeg, используя временный список файлов."""
+#         try:
+#             with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_file:
+#                 for file_data in self.input_files:
+#                     if file_data:
+#                         temp_file.write(f"file '{file_data.name}'\n")
+#             print(temp_file.name)
+#             ffmpeg_command = [
+#                 'ffmpeg',
+#                 '-f', 'concat',  # формат ввода: список файлов
+#                 '-safe', '0',  # разрешаем использовать небезопасные символы в путях
+#                 '-i', temp_file.name,  # ввод через временный файл списка
+#                 '-c', 'copy',  # копируем содержимое без перекодирования
+#                 '-y',  # перезаписываем выходной файл без предупреждения
+#                 self.output_file  # выходной файл
+#             ]
+#
+#             subprocess.run(ffmpeg_command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+#             print(f'Файлы успешно объединены в {self.output_file}')
+#         except subprocess.CalledProcessError as e:
+#             print(f'Ошибка при объединении файлов: {e}')
+#         finally:
+#             os.remove(temp_file.name)  # Удаляем временный файл списка после завершения работы
+#
+#     def run(self):
+#         """Основной метод для выполнения всех шагов."""
+#         self.merge_files()
 
 
 class Converter(QRunnable):
@@ -57,6 +57,7 @@ class Converter(QRunnable):
         self.input_path = input_path
         self.output_temp_files_list = output_temp_files_list
         self.index = index
+        self.my_signals = ConverterSignals()
 
         # self.progress = int((self.index + 1) * 100 / total_files)  # Прогресс в процентах
 
@@ -76,8 +77,7 @@ class Converter(QRunnable):
             audio.export(output_buffer.name, format="mp4", codec="aac")
             output_buffer.close()  # Явно закрываем временный файл
             print(f"Файл успешно конвертирован: {input_path}")
-
-
+            self.my_signals.progress_bar_signal.emit(self.index)
             return output_buffer
 
         except Exception as e:
@@ -85,29 +85,47 @@ class Converter(QRunnable):
             return None
 
 
-class ConverterManager(QObject):
+# class ConverterManager(QObject):
+class ConverterManager():
     def __init__(self, progressBar):
         super().__init__()
         self.progressBar = progressBar
         self.progressBar.setValue(0)
 
-        self.thread_pool = QThreadPool() # объект пула потоков
+        self.thread_pool = QThreadPool()  # объект пула потоков
 
         self.output_temp_files_list = []  # Список для хранения временных файлов аудиофайлов
-        self.total_converted_files = 0 # Количество сконвертированных файлов
+        self.total_converted_files = 0  # Количество сконвертированных файлов
+
+    def update_progress(self, task_num):
+        """Обновляет прогрессбар на основании выполнения задач."""
+        self.total_converted_files += 1  # Увеличиваем количество сконвертированных файлов
+        progress_percentage = int(self.total_converted_files * 100 / self.total_files)  # Рассчитываем процент
+        print(progress_percentage)
+        self.progressBar.setValue(progress_percentage)
 
     def start(self, input_list, output_file):
         self.output_temp_files_list = [None] * len(input_list)  # Инициализируем список с None для каждого файла
-        self.total_files = len(input_list) # общее число исходных mp3 файлов
+        self.total_files = len(input_list)  # общее число исходных mp3 файлов
 
+        self.total_converted_files = 0  # Сбрасываем счетчик сконвертированных файлов
+        self.progressBar.setValue(0)  # Сбрасываем прогрессбар
+
+        # Запускаем задачи
         for index, file in enumerate(input_list):
             converter = Converter(file, self.output_temp_files_list, index, self.total_files)
+            converter.my_signals.progress_bar_signal.connect(self.update_progress)
             self.thread_pool.start(converter)
 
         # Ждём завершения всех потоков
         # self.thread_pool.waitForDone()
+        # print('Начинаем объединять файлы..')
+        # print(self.output_temp_files_list)
 
-        print('Начинаем объединять файлы..')
+        # Если все задачи завершены, отправляем сигнал
+
+        # Ждём завершения всех потоков
+        # self.thread_pool.waitForDone()
 
         # temp_files_list = self.output_temp_files_list
         # merger = M4BMerger(temp_files_list, output_file)
