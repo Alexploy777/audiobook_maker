@@ -109,8 +109,8 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         # на этом этапе будем передавать аргументы и запускать конвертацию!!!
         # self.audio_processor, file_paths=file_paths, output_path=output_path, bitrate=bitrate, metadata=metadata
 
-        converter_manager = ConverterManager()
-        converter_manager.start(file_paths, output_path, self.progressBar)
+        converter_manager = ConverterManager(self.progressBar) # передали прогресс-бар при инициации класса
+        converter_manager.start(file_paths, output_path)
 
         # self.thread = ConvertThread(file_paths=file_paths, output_path=output_path, bitrate=bitrate, metadata=metadata, progressBar=self.progressBar)
         # self.thread.start()

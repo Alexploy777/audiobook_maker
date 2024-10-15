@@ -8,7 +8,7 @@ from gui import Ui_MainWindow  # Ваш интерфейс
 
 
 class ProgressBar_class(QMainWindow, Ui_MainWindow):
-    quantity = 5  # Количество задач
+    quantity = 10  # Количество задач
 
     def __init__(self):
         super(ProgressBar_class, self).__init__()
@@ -24,6 +24,7 @@ class ProgressBar_class(QMainWindow, Ui_MainWindow):
         self.all_tasks_completed_signal = My_signals()
         self.all_tasks_completed_signal.all_tasks_completed.connect(self.on_all_tasks_completed)
 
+    # Кнопка для старта задач
     def start_my_task(self):
         """Запускает выполнение задач в пуле потоков."""
         self.completed_tasks = 0  # Сбрасываем счетчик выполненных задач

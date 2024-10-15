@@ -52,13 +52,13 @@ class M4BMerger:
 
 
 class Converter(QRunnable):
-    def __init__(self, file, output_temp_files_list, index, total_files, progressBar):
+    def __init__(self, input_path, output_temp_files_list, index, total_files):
         super().__init__()
-        self.input_path = file
+        self.input_path = input_path
         self.output_temp_files_list = output_temp_files_list
         self.index = index
-        self.signals = ConverterSignals()  # объект сигналов
-        self.progress = int((self.index + 1) * 100 / total_files)  # Прогресс в процентах
+
+        # self.progress = int((self.index + 1) * 100 / total_files)  # Прогресс в процентах
 
     @pyqtSlot()
     def run(self):
@@ -66,8 +66,8 @@ class Converter(QRunnable):
         self.output_temp_files_list[self.index] = output_file  # Запись результата по индексу
 
         # Излучаем сигнал для обновления прогресс-бара
-        self.signals.progress_bar_signal.emit(self.progress)
-        print(f"Прогресс: {self.progress}%")
+        # self.signals.progress_bar_signal.emit(self.progress)
+        # print(f"Прогресс: {self.progress}%")
 
     def convert_mp3_to_m4b(self, input_path):
         try:
@@ -86,21 +86,22 @@ class Converter(QRunnable):
 
 
 class ConverterManager(QObject):
-    def __init__(self):
+    def __init__(self, progressBar):
         super().__init__()
-        self.thread_pool = QThreadPool()
-        self.output_temp_files_list = []  # Список для хранения временных файлов аудиофайлов
-        self.total_files = 0
+        self.progressBar = progressBar
+        self.progressBar.setValue(0)
 
-    def start(self, input_list, output_file, progressBar):
+        self.thread_pool = QThreadPool() # объект пула потоков
+
+        self.output_temp_files_list = []  # Список для хранения временных файлов аудиофайлов
+        self.total_converted_files = 0 # Количество сконвертированных файлов
+
+    def start(self, input_list, output_file):
         self.output_temp_files_list = [None] * len(input_list)  # Инициализируем список с None для каждого файла
-        self.total_files = len(input_list)
+        self.total_files = len(input_list) # общее число исходных mp3 файлов
 
         for index, file in enumerate(input_list):
-            converter = Converter(file, self.output_temp_files_list, index, self.total_files, progressBar)
-            converter.signals.progress_bar_signal.connect(progressBar.setValue)  # Подключаем сигнал к обновлению прогресс-бара
-            # converter.signals.progress_bar_signal.connect(
-            #     lambda value: QMetaObject.invokeMethod(progressBar, "setValue", Qt.QueuedConnection, Q_ARG(int, value)))
+            converter = Converter(file, self.output_temp_files_list, index, self.total_files)
             self.thread_pool.start(converter)
 
         # Ждём завершения всех потоков
@@ -121,10 +122,10 @@ class ConverterManager(QObject):
 
 if __name__ == '__main__':
     pass
-    input_list = ['mp3/1.mp3', 'mp3/2.mp3', 'mp3/3.mp3', 'mp3/4.mp3']
-    output_file = 'final.m4b'
-    start_time = time()
-    converter_manager = ConverterManager()
-    converter_manager.start(input_list, output_file)
-    print('Работа завершена!')
-    print(time() - start_time)
+    # input_list = ['mp3/1.mp3', 'mp3/2.mp3', 'mp3/3.mp3', 'mp3/4.mp3']
+    # output_file = 'final.m4b'
+    # start_time = time()
+    # converter_manager = ConverterManager()
+    # converter_manager.start(input_list, output_file)
+    # print('Работа завершена!')
+    # print(time() - start_time)
