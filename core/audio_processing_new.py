@@ -140,10 +140,10 @@ class ConverterManager():
 
 if __name__ == '__main__':
     pass
-    # input_list = ['mp3/1.mp3', 'mp3/2.mp3', 'mp3/3.mp3', 'mp3/4.mp3']
-    # output_file = 'final.m4b'
+    input_list = ['mp3/1.mp3', 'mp3/2.mp3']
+    output_file = 'final.m4b'
     # start_time = time()
-    # converter_manager = ConverterManager()
-    # converter_manager.start(input_list, output_file)
+    converter_manager = ConverterManager()
+    converter_manager.start(input_list, output_file)
     # print('Работа завершена!')
     # print(time() - start_time)
