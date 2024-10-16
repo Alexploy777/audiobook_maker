@@ -1,6 +1,6 @@
 import sys
-from PyQt5.QtCore import QRunnable, QThreadPool, pyqtSignal, QObject, pyqtSlot
-from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox
+from PyQt5.QtCore import QRunnable, pyqtSignal, QObject, pyqtSlot
+from PyQt5.QtWidgets import QMessageBox
 from pydub import AudioSegment
 import tempfile
 import os
@@ -10,15 +10,18 @@ import os
 os.environ['PATH'] += os.pathsep + os.path.abspath('external')
 
 
-class ConverterManager(QObject):
+class ConverterManager:
     def __init__(self, audiobook_interface):
-        super(ConverterManager, self).__init__()
         print('мы тут!!!!!!!!!!!')
         # self.audiobook_interface = audiobook_interface
+
         self.progressBar = audiobook_interface.progressBar
+        # self.progressBar.setValue(60)
+
         self.label_progress_description = audiobook_interface.label_progress_description
-        self.progressBar.setValue(0)
-        self.thread_pool = QThreadPool()
+        # self.progressBar.setValue(0)
+        # self.thread_pool = QThreadPool()
+        self.thread_pool = audiobook_interface.thread_pool
         self.completed_tasks = 0  # Количество завершённых задач
 
         self.output_temp_files_list = []  # Список для хранения временных файлов аудиофайлов
@@ -51,6 +54,7 @@ class ConverterManager(QObject):
         """Обновляет прогрессбар на основании выполнения задач."""
         self.completed_tasks += 1  # Увеличиваем количество завершённых задач
         progress_percentage = int((self.completed_tasks / self.quantity) * 100)  # Рассчитываем процент
+        print(progress_percentage)
         self.progressBar.setValue(progress_percentage)
 
         # Если все задачи завершены, отправляем сигнал
@@ -107,3 +111,5 @@ class Converter(QRunnable):
             return None
 
 
+if __name__ == '__main__':
+    pass

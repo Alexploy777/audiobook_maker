@@ -147,7 +147,7 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.label_progress_description.setText(value)
 
 
-    def update_progress(self, v):
+    def update_progress(self):
         """Обновляет прогрессбар на основании выполнения задач."""
         self.completed_tasks += 1  # Увеличиваем количество завершённых задач
         progress_percentage = int((self.completed_tasks / self.quantity) * 100)  # Рассчитываем процент

@@ -2,7 +2,7 @@
 import sys
 from PyQt5.QtWidgets import QMainWindow, QApplication, QMessageBox  # Импортируем класс QMainWindow и QApplication
 
-from core import AudioProcessor  # Подключаем AudioProcessor из core/audio_processing.py
+# from core import AudioProcessor  # Подключаем AudioProcessor из core/audio_processing.py
 from core import ConverterManager
 from core import MetadataManager  # Подключаем MetadataManager из core/metadata.py
 from data import Config  # Подключаем Config из data/config
@@ -21,7 +21,7 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
 
         self.file_manager = FileManager()
         self.metadata_manager = MetadataManager(self.label_cover_of_book)
-        self.audio_processor = AudioProcessor(ffmpeg_path=Config.FFMPEG_PATH)  # Укажите путь к ffmpeg
+        # self.audio_processor = AudioProcessor(ffmpeg_path=Config.FFMPEG_PATH)  # Укажите путь к ffmpeg
 
         self.progressBar.setValue(1)  # Устанавливаем начальное значение
 
@@ -79,18 +79,18 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         cover_image_path = self.file_manager.upload_cover()
         self.metadata_manager.show_cover_image_path(cover_image_path)
 
-    def update_progress(self, progress):
-        self.progressBar.setValue(progress)
-
-    def progress_description(self, description):
-        self.label_progress_description.setText(description)
-
-    def conversion_finished(self):
-        QMessageBox.information(self, "Готово", "Конвертация завершена!")
-        self.progressBar.setValue(0)
-
-    def stop_and_clean(self):
-        pass
+    # def update_progress(self, progress):
+    #     self.progressBar.setValue(progress)
+    #
+    # def progress_description(self, description):
+    #     self.label_progress_description.setText(description)
+    #
+    # def conversion_finished(self):
+    #     QMessageBox.information(self, "Готово", "Конвертация завершена!")
+    #     self.progressBar.setValue(0)
+    #
+    # def stop_and_clean(self):
+    #     pass
 
 
 
