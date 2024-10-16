@@ -87,9 +87,9 @@ class Converter(QRunnable):
 
 # class ConverterManager(QObject):
 class ConverterManager():
-    def __init__(self, progressBar):
+    def __init__(self, audiobookCreator):
         super().__init__()
-        self.progressBar = progressBar
+        self.progressBar = audiobookCreator.progressBar
         self.progressBar.setValue(0)
 
         self.thread_pool = QThreadPool()  # объект пула потоков
