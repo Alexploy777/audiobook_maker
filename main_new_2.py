@@ -12,6 +12,8 @@ from core import MetadataManager, ConverterSignals, Converter  # Подключ�
 from data import Config  # Подключаем Config из data/config
 from data import FileManager  # Подключаем FileManager из data/file_manager
 from gui import Ui_MainWindow  # Подключаем класс MainWindow из gui.py
+
+
 # from core import ConvertThread # Подключаем класс ConvertThread из core/convert_thread.py
 
 
@@ -33,11 +35,11 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.convertermanager()
         # self.convertermanager_mini()
 
-
     def init_ui(self):
         self.comboBox_audio_quality.addItems(Config.AUDIO_BITRATE_CHOICES)  # Добавляем варианты битрейта
         self.comboBox_audio_quality.setCurrentText(Config.AUDIO_BITRATE)  # Устанавливаем текущее значение из Config
-        self.comboBox_audio_quality.currentTextChanged.connect(self.update_audio_bitrate)  # connect - при выборе другого битрейта
+        self.comboBox_audio_quality.currentTextChanged.connect(
+            self.update_audio_bitrate)  # connect - при выборе другого битрейта
         self.pushButton.clicked.connect(self.add_files)  # connect - для добавления файлов
         self.listWidget.itemSelectionChanged.connect(self.display_metadata)  # При выборе/выделении файла
         self.pushButton_2.clicked.connect(self.remove_selected_files)  # connect - для удаления выделенных файлов
@@ -100,23 +102,11 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         cover_image_path = self.file_manager.upload_cover()
         self.metadata_manager.show_cover_image_path(cover_image_path)
 
-    # def update_progress(self, progress):
-    #     self.progressBar.setValue(progress)
-
-    # def progress_description(self, description):
-    #     self.label_progress_description.setText(description)
-
-    # def conversion_finished(self):
-    #     QMessageBox.information(self, "Готово", "Конвертация завершена!")
-    #     self.progressBar.setValue(0)
-
     def stop_and_clean(self):
         pass
 
-
-
     def start_conversion(self):
-        file_paths = self.file_manager.file_paths # Возвращает список файлов для конвертации
+        file_paths = self.file_manager.file_paths  # Возвращает список файлов для конвертации
         output_path = self.file_manager.get_output_file_path()
         bitrate = Config.AUDIO_BITRATE
 
@@ -127,12 +117,45 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         metadata['year'] = self.lineEdit_year.text()
         metadata['genre'] = self.lineEdit_genre.text()
 
-
         print('Конвертация запущена')
 
-        # manager = MyManager(self)
-        # manager.start_my_task(file_paths)
+        self.completed_tasks = 0  # Сбрасываем счетчик выполненных задач
+        self.progressBar.setValue(0)  # Сбрасываем прогрессбар
+        self.quantity = len(file_paths)
+        self.output_temp_files_list = [None] * self.quantity  # Инициализируем список с None для каждого файла
 
+        # Запускаем задачи
+        for index, file in enumerate(file_paths):
+            some_task = Converter(index=index, quantity=self.quantity, file=file,
+                                  output_temp_files_list=self.output_temp_files_list)
+            some_task.my_signals.progress_bar_signal.connect(self.update_progress)
+            some_task.my_signals.label_info_signal.connect(self.update_label)
+            self.thread_pool.start(some_task)
+
+    def update_label(self, value):
+        self.label_progress_description.setText(value)
+
+    def update_progress(self):
+        """Обновляет прогрессбар на основании выполнения задач."""
+        self.completed_tasks += 1  # Увеличиваем количество завершённых задач
+        progress_percentage = int((self.completed_tasks / self.quantity) * 100)  # Рассчитываем процент
+        self.progressBar.setValue(progress_percentage)
+
+        # Если все задачи завершены, отправляем сигнал
+        if self.completed_tasks == self.quantity:
+            self.all_tasks_completed_signal.all_tasks_completed.emit()
+
+    def on_all_tasks_completed(self):
+        """Вызывается при завершении всех задач."""
+        temp_files_list = [f.name for f in self.output_temp_files_list]
+        print(temp_files_list)
+        QMessageBox.information(None, "Завершено", "Все задания выполнены!")
+        self.delete_temp_files(temp_files_list)
+
+    def delete_temp_files(self, temp_files_list):
+        for temp_file in temp_files_list:
+            if temp_file:
+                os.remove(temp_file)  # Удаляем временный файл
 
 
 # class MyManager:
@@ -192,50 +215,6 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
 #         for temp_file in temp_files_list:
 #             if temp_file:
 #                 os.remove(temp_file)  # Удаляем временный файл
-
-
-        self.completed_tasks = 0  # Сбрасываем счетчик выполненных задач
-        self.progressBar.setValue(0)  # Сбрасываем прогрессбар
-        self.quantity = len(file_paths)
-        self.output_temp_files_list = [None] * self.quantity  # Инициализируем список с None для каждого файла
-
-        # Запускаем задачи
-        for index, file in enumerate(file_paths):
-            some_task = Converter(index=index, quantity=self.quantity, file=file,
-                                  output_temp_files_list=self.output_temp_files_list)
-            some_task.my_signals.progress_bar_signal.connect(self.update_progress)
-            some_task.my_signals.label_info_signal.connect(self.update_label)
-            self.thread_pool.start(some_task)
-
-
-    def update_label(self, value):
-        self.label_progress_description.setText(value)
-
-
-    def update_progress(self):
-        """Обновляет прогрессбар на основании выполнения задач."""
-        self.completed_tasks += 1  # Увеличиваем количество завершённых задач
-        progress_percentage = int((self.completed_tasks / self.quantity) * 100)  # Рассчитываем процент
-        self.progressBar.setValue(progress_percentage)
-
-        # Если все задачи завершены, отправляем сигнал
-        if self.completed_tasks == self.quantity:
-            self.all_tasks_completed_signal.all_tasks_completed.emit()
-
-    def on_all_tasks_completed(self):
-        """Вызывается при завершении всех задач."""
-        temp_files_list = [f.name for f in self.output_temp_files_list]
-        print(temp_files_list)
-        QMessageBox.information(None, "Завершено", "Все задания выполнены!")
-        self.delete_temp_files(temp_files_list)
-
-    def delete_temp_files(self, temp_files_list):
-        for temp_file in temp_files_list:
-            if temp_file:
-                os.remove(temp_file)  # Удаляем временный файл
-
-
-
 
 
 if __name__ == '__main__':
