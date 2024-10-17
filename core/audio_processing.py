@@ -1,70 +1,61 @@
-# core/audio_processing.py
-import os
-os.environ['PATH'] += os.pathsep + os.path.abspath('external')
-from mutagen.mp4 import MP4, MP4Cover
+import subprocess
+import sys
+from PyQt5.QtCore import QRunnable, pyqtSignal, QObject, pyqtSlot
+from PyQt5.QtWidgets import QMessageBox
+from mutagen.mp4 import MP4Cover, MP4
 from pydub import AudioSegment
+import tempfile
+import os
 
 
-class AudioProcessor:
-    def __init__(self, ffmpeg_path):
-        # current_dir = os.path.dirname(__file__)
-        # ffmpeg_path = os.path.join(current_dir, ffmpeg_path)
-        AudioSegment.converter = ffmpeg_path
-
-        print(ffmpeg_path)
+class ConverterSignals(QObject):
+    progress_bar_signal = pyqtSignal(int)
+    label_info_signal = pyqtSignal(str)
+    all_tasks_completed = pyqtSignal()  # Сигнал о завершении всех заданий
+    all_files_merged = pyqtSignal()  # Сигнал об окончании объединения
 
 
-    # точка входа
-    def convert_and_combine(self, file_paths, bitrate, update_progress, progress_description, output_path, metadata):
-        self.total_progress_bar_steps = 100 // (len(file_paths))
-        progress_bar_steps = 0
-        update_progress(progress_bar_steps)
-        progress_description('Конвертируем файлы из mp3 в m4b')
-        converted_files = []
-        if not os.path.exists("temp"):
-            os.makedirs("temp")
-        for index, file_path in enumerate(file_paths):
-            temp_output = 'temp/tmp_' + os.path.splitext(os.path.basename(file_path))[0] + '.m4b'
-            self.convert_file_to_m4b(file_path, temp_output, bitrate)
-            converted_files.append(temp_output)
-            progress_bar_steps = (index + 1) * self.total_progress_bar_steps
-            update_progress(progress_bar_steps)
+class M4BMerger(QRunnable):
+    def __init__(self, input_files, output_file, metadata):
+        super().__init__()
+        self.input_files = input_files  # Список буферов аудиофайлов
+        self.output_file = output_file  # Финальный выходной файл
+        self.metadata = metadata
+        self.my_signals = ConverterSignals()
 
-        # Объединение всех временных m4b файлов
-        self.combine_files(converted_files, output_path, update_progress, progress_description)
+    def merge_files(self):
+        """Объединяем m4b файлы с помощью ffmpeg, используя временный список файлов."""
+        self.my_signals.label_info_signal.emit('Начинаю объединять файлы')
+        self.my_signals.progress_bar_signal.emit(30)
+        try:
+            with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_file:
+                for file_data in self.input_files:
+                    if file_data:
+                        # temp_file.write(f"file '{file_data.name}'\n")
+                        temp_file.write(f"file '{file_data}'\n")
+            print(temp_file.name)
+            ffmpeg_command = [
+                'ffmpeg',
+                '-f', 'concat',  # формат ввода: список файлов
+                '-safe', '0',  # разрешаем использовать небезопасные символы в путях
+                '-i', temp_file.name,  # ввод через временный файл списка
+                '-c', 'copy',  # копируем содержимое без перекодирования
+                '-y',  # перезаписываем выходной файл без предупреждения
+                self.output_file  # выходной файл
+            ]
 
-        for temp_file in converted_files:
-            os.remove(temp_file)
+            subprocess.run(ffmpeg_command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            print(f'Файлы успешно объединены в {self.output_file}')
+        except subprocess.CalledProcessError as e:
+            print(f'Ошибка при объединении файлов: {e}')
+        finally:
+            os.remove(temp_file.name)  # Удаляем временный файл списка после завершения работы
 
-        # Добавление метаданных и обложки
-        self.add_cover_and_metadata(output_path, metadata, update_progress, progress_description)
-        update_progress(100)
-        progress_description('Обработка завершена!')
-
-    def convert_file_to_m4b(self, file_path, temp_output, bitrate):
-        audio = AudioSegment.from_mp3(file_path)
-        audio.export(temp_output, format="mp4", bitrate=bitrate, codec="aac")
-
-    def combine_files(self, converted_files, output_path, update_progress, progress_description):
-        update_progress(1)
-        combined = AudioSegment.empty()
-        progress_description('Объединяю файлы')
-        for index, file_path in enumerate(converted_files):
-            audio = AudioSegment.from_file(file_path, format="mp4")
-            combined += audio
-
-            progress_bar_steps = (index + 1) * self.total_progress_bar_steps
-            update_progress(progress_bar_steps)
-
-        update_progress(1)
-        progress_description('Сохраняю объединенный файл')
-        combined.export(output_path, format="mp4", codec="aac") # долго, нет индикации в прогресс-баре
-
-    def add_cover_and_metadata(self, output_path, metadata, update_progress, progress_description):
+    def add_cover_and_metadata(self, output_path, metadata):
+        self.my_signals.label_info_signal.emit('Добавляю метаданные')
+        self.my_signals.progress_bar_signal.emit(60)
         audio = MP4(output_path)
 
-        update_progress(1)
-        progress_description('Вставляю метаданные')
         # Добавление метаданных
         audio['\xa9nam'] = metadata.get("title")
         audio['\xa9ART'] = metadata.get("artist")
@@ -72,12 +63,51 @@ class AudioProcessor:
         audio['\xa9day'] = metadata.get("year")
         audio['\xa9gen'] = metadata.get("genre")
 
-        update_progress(50)
-
         if cover_image_bytes := metadata.get('image_data'):
             cover = MP4Cover(cover_image_bytes, imageformat=MP4Cover.FORMAT_JPEG)
             audio['covr'] = [cover]
-
-        update_progress(90)
-
+        self.my_signals.progress_bar_signal.emit(90)
+        self.my_signals.label_info_signal.emit('Сохраняю файл')
         audio.save()
+
+    def run(self):
+        """Основной метод для выполнения всех шагов."""
+        self.merge_files()
+        self.add_cover_and_metadata(self.output_file, self.metadata)
+        self.my_signals.all_files_merged.emit()
+
+
+class Converter(QRunnable):
+    def __init__(self, index, quantity, file, output_temp_files_list, bitrate):
+        super().__init__()
+        self.index = index
+        self.quantity = quantity
+        self.my_signals = ConverterSignals()
+        self.file = file
+        self.output_temp_files_list = output_temp_files_list
+        self.bitrate = bitrate
+
+    @pyqtSlot()
+    def run(self):
+        """Запускает выполнение задания."""
+        output_file = self.convert_mp3_to_m4b(self.file)
+        self.output_temp_files_list[self.index] = output_file
+        self.my_signals.progress_bar_signal.emit(self.index)  # Отправляем сигнал о завершении задания
+        self.my_signals.label_info_signal.emit(f'Файл {os.path.abspath(self.file)} успешно сконвертирован')
+
+    def convert_mp3_to_m4b(self, input_path):
+        try:
+            audio = AudioSegment.from_mp3(input_path)
+            output_buffer = tempfile.NamedTemporaryFile(suffix='.m4b', delete=False)  # Создаем временный файл
+            audio.export(output_buffer.name, format="mp4", codec="aac", bitrate=self.bitrate)
+            output_buffer.close()  # Явно закрываем временный файл
+            print(f"Файл успешно конвертирован: {input_path}")
+            return output_buffer
+
+        except Exception as e:
+            print(f"Ошибка при конвертации файла {input_path}: {e}")
+            return None
+
+
+if __name__ == '__main__':
+    pass
