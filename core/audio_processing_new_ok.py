@@ -13,13 +13,14 @@ class ConverterSignals(QObject):
 
 
 class Converter(QRunnable):
-    def __init__(self, index, quantity, file, output_temp_files_list):
+    def __init__(self, index, quantity, file, output_temp_files_list, bitrate):
         super().__init__()
         self.index = index
         self.quantity = quantity
         self.my_signals = ConverterSignals()
         self.file = file
         self.output_temp_files_list = output_temp_files_list
+        self.bitrate = bitrate
 
     @pyqtSlot()
     def run(self):
@@ -27,13 +28,13 @@ class Converter(QRunnable):
         output_file = self.convert_mp3_to_m4b(self.file)
         self.output_temp_files_list[self.index] = output_file
         self.my_signals.progress_bar_signal.emit(self.index)  # Отправляем сигнал о завершении задания
-        self.my_signals.label_info_signal.emit(f'конвертирую: {os.path.abspath(self.file)}')
+        self.my_signals.label_info_signal.emit(f'Файл {os.path.abspath(self.file)} успешно сконвертирован')
 
     def convert_mp3_to_m4b(self, input_path):
         try:
             audio = AudioSegment.from_mp3(input_path)
             output_buffer = tempfile.NamedTemporaryFile(suffix='.m4b', delete=False)  # Создаем временный файл
-            audio.export(output_buffer.name, format="mp4", codec="aac")
+            audio.export(output_buffer.name, format="mp4", codec="aac", bitrate=self.bitrate)
             output_buffer.close()  # Явно закрываем временный файл
             print(f"Файл успешно конвертирован: {input_path}")
             return output_buffer
