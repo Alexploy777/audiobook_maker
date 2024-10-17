@@ -48,9 +48,10 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
 
         self.output_temp_files_list = []  # Список для хранения временных файлов аудиофайлов
 
-        # Дополнительный сигнал завершения всех задач
-        self.all_tasks_completed_signal = ConverterSignals()
-        self.all_tasks_completed_signal.all_tasks_completed.connect(self.on_all_tasks_completed)
+
+        self.audibook_converter_signals = ConverterSignals()
+        self.audibook_converter_signals.label_info_signal.connect(self.update_label) # Подключаем вывод сообщений в label интерфейса
+        self.audibook_converter_signals.all_tasks_completed.connect(self.on_all_tasks_completed) # Подключаем сигнал завершения всех задач
 
     def get_metadata_widgets(self):
         return (
@@ -97,6 +98,7 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         pass
 
     def start_conversion(self):
+        self.audibook_converter_signals.label_info_signal.emit('Подготовка к работе..')
         file_paths = self.file_manager.file_paths  # Возвращает список файлов для конвертации
         output_path = self.file_manager.get_output_file_path()
         bitrate = Config.AUDIO_BITRATE
@@ -134,7 +136,7 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
 
         # Если все задачи завершены, отправляем сигнал
         if self.completed_tasks == self.quantity:
-            self.all_tasks_completed_signal.all_tasks_completed.emit()
+            self.audibook_converter_signals.all_tasks_completed.emit()
 
     def on_all_tasks_completed(self):
         """Вызывается при завершении всех задач."""
