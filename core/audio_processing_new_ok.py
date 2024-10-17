@@ -1,3 +1,4 @@
+import subprocess
 import sys
 from PyQt5.QtCore import QRunnable, pyqtSignal, QObject, pyqtSlot
 from PyQt5.QtWidgets import QMessageBox
@@ -10,6 +11,46 @@ class ConverterSignals(QObject):
     progress_bar_signal = pyqtSignal(int)
     label_info_signal = pyqtSignal(str)
     all_tasks_completed = pyqtSignal()  # Сигнал о завершении всех заданий
+    all_files_merged = pyqtSignal()  # Сигнал об окончании объединения
+
+
+class M4BMerger(QRunnable):
+    def __init__(self, input_files, output_file):
+        super().__init__()
+        self.input_files = input_files  # Список буферов аудиофайлов
+        self.output_file = output_file  # Финальный выходной файл
+        self.my_signals = ConverterSignals()
+
+    def merge_files(self):
+        """Объединяем m4b файлы с помощью ffmpeg, используя временный список файлов."""
+        try:
+            with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_file:
+                for file_data in self.input_files:
+                    if file_data:
+                        # temp_file.write(f"file '{file_data.name}'\n")
+                        temp_file.write(f"file '{file_data}'\n")
+            print(temp_file.name)
+            ffmpeg_command = [
+                'ffmpeg',
+                '-f', 'concat',  # формат ввода: список файлов
+                '-safe', '0',  # разрешаем использовать небезопасные символы в путях
+                '-i', temp_file.name,  # ввод через временный файл списка
+                '-c', 'copy',  # копируем содержимое без перекодирования
+                '-y',  # перезаписываем выходной файл без предупреждения
+                self.output_file  # выходной файл
+            ]
+
+            subprocess.run(ffmpeg_command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            print(f'Файлы успешно объединены в {self.output_file}')
+        except subprocess.CalledProcessError as e:
+            print(f'Ошибка при объединении файлов: {e}')
+        finally:
+            os.remove(temp_file.name)  # Удаляем временный файл списка после завершения работы
+
+    def run(self):
+        """Основной метод для выполнения всех шагов."""
+        self.merge_files()
+        self.my_signals.all_files_merged.emit()
 
 
 class Converter(QRunnable):

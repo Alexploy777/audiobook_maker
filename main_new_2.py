@@ -7,7 +7,8 @@ os.environ['PATH'] += os.pathsep + os.path.abspath('external')
 
 from PyQt5.QtCore import QThreadPool
 from PyQt5.QtWidgets import QMainWindow, QApplication, QMessageBox  # Импортируем класс QMainWindow и QApplication
-from core import MetadataManager, ConverterSignals, Converter  # Подключаем MetadataManager из core/metadata.py
+from core import MetadataManager, ConverterSignals, Converter, \
+    M4BMerger  # Подключаем MetadataManager из core/metadata.py
 from data import Config  # Подключаем Config из data/config
 from data import FileManager  # Подключаем FileManager из data/file_manager
 from gui import Ui_MainWindow  # Подключаем класс MainWindow из gui.py
@@ -98,7 +99,7 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
     def start_conversion(self):
         self.audibook_converter_signals.label_info_signal.emit('Подготовка к работе..')
         file_paths = self.file_manager.file_paths  # Возвращает список файлов для конвертации
-        output_path = self.file_manager.get_output_file_path()
+        self.output_path = self.file_manager.get_output_file_path()
         bitrate = Config.AUDIO_BITRATE
 
         metadata = self.metadata_manager.metadata
@@ -139,11 +140,20 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
 
     def on_all_tasks_completed(self):
         """Вызывается при завершении всех задач."""
-        temp_files_list = [f.name for f in self.output_temp_files_list]
-        print(temp_files_list)
+        self.temp_files_list = [f.name for f in self.output_temp_files_list]
+        # print(temp_files_list)
         QMessageBox.information(None, "Завершено", "Все задания выполнены!")
         self.audibook_converter_signals.label_info_signal.emit('Все файлы успешно конвертированы!')
-        self.delete_temp_files(temp_files_list)
+
+        m4bmerger = M4BMerger(self.temp_files_list, self.output_path)
+        m4bmerger.my_signals.all_files_merged.connect(self.end_of_merge)
+        self.thread_pool.start(m4bmerger)
+
+        # self.delete_temp_files(temp_files_list)
+
+    def end_of_merge(self):
+        self.audibook_converter_signals.label_info_signal.emit('Файлы объеденены')
+        self.delete_temp_files(self.temp_files_list)
 
     def delete_temp_files(self, temp_files_list):
         for temp_file in temp_files_list:
