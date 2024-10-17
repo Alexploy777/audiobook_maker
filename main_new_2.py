@@ -12,7 +12,6 @@ from data import FileManager  # Подключаем FileManager из data/file_
 from gui import Ui_MainWindow  # Подключаем класс MainWindow из gui.py
 
 
-
 class AudiobookCreator(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super(AudiobookCreator, self).__init__()
@@ -29,7 +28,6 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
 
         self.init_ui()
         self.convertermanager()
-        # self.convertermanager_mini()
 
     def init_ui(self):
         self.comboBox_audio_quality.addItems(Config.AUDIO_BITRATE_CHOICES)  # Добавляем варианты битрейта
@@ -42,9 +40,6 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.pushButton_upload_cover.clicked.connect(self.upload_cover)  # connect - для загрузки обложки пользователя
         self.pushButton_convert.clicked.connect(self.start_conversion)  # connect - для конвертации
         self.pushButton_stop_and_clean.clicked.connect(self.stop_and_clean)  # connect - для остановки конвертации
-
-    def convertermanager_mini(self):
-        self.thread_pool = QThreadPool()
 
     def convertermanager(self):
         self.progressBar.setValue(0)

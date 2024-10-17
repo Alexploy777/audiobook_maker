@@ -6,7 +6,6 @@ import tempfile
 import os
 
 
-
 class ConverterSignals(QObject):
     progress_bar_signal = pyqtSignal(int)
     label_info_signal = pyqtSignal(str)
