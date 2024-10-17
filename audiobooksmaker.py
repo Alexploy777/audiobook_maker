@@ -5,7 +5,7 @@ from time import sleep
 
 os.environ['PATH'] += os.pathsep + os.path.abspath('external')
 
-from PyQt5.QtCore import QThreadPool
+from PyQt5.QtCore import QThreadPool, QTimer
 from PyQt5.QtWidgets import QMainWindow, QApplication, QMessageBox  # Импортируем класс QMainWindow и QApplication
 from core import MetadataManager, ConverterSignals, Converter, M4BMerger  # Подключаем MetadataManager из core/metadata.py
 from data import Config  # Подключаем Config из data/config
@@ -44,6 +44,7 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.audibook_converter_signals.label_info_signal.connect(self.update_label)  # Подключаем вывод сообщений в label интерфейса
         self.audibook_converter_signals.all_tasks_completed.connect(self.on_all_tasks_completed)  # Подключаем сигнал завершения всех задач
         self.audibook_converter_signals.progress_bar_signal.connect(self.update_progress)  # ???????????
+        self.stop_flag = False # флага останова нет
 
     def get_metadata_widgets(self):
         return (
@@ -89,12 +90,30 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.metadata_manager.show_cover_image_path(cover_image_path)
 
     def stop_and_clean(self):
-        pass
+        print('STOP')
+        self.stop_flag = True
+
+    # def start_delay(self):
+    #     self.counter = 5  # Начальное значение счетчика
+    #     self.timer = QTimer()
+    #     self.timer.timeout.connect(self.update_counter)  # Соединение сигнала таймера с функцией обновления
+    #     self.timer.start(1000)  # Запуск таймера с интервалом в 1 секунду (1000 мс)
+    #
+    # def update_counter(self):
+    #     if self.counter > 0:
+    #         self.audibook_converter_signals.label_info_signal.emit(f'Стартуем через {self.counter} секунд')
+    #         self.counter -= 1
+    #     else:
+    #         self.timer.stop()  # Остановка таймера, когда счетчик достигает 0
+    #         self.audibook_converter_signals.label_info_signal.emit('Конвертация началась!')
 
     def start_conversion(self):
         if output_path := self.file_manager.get_output_file_path():
+            # self.stop_flag = False
+            # self.start_delay()
             self.output_path = output_path
             self.audibook_converter_signals.label_info_signal.emit('Подготовка к работе..')
+
             file_paths = self.file_manager.file_paths  # Возвращает список файлов для конвертации
             bitrate = Config.AUDIO_BITRATE
 
@@ -117,11 +136,11 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         # Запускаем задачи
             for index, file in enumerate(file_paths):
                 some_task = Converter(index=index, quantity=self.quantity, file=file,
-                                      output_temp_files_list=self.output_temp_files_list, bitrate=bitrate)
+                                      output_temp_files_list=self.output_temp_files_list, bitrate=bitrate, stop_flag=self.stop_flag)
                 some_task.my_signals.progress_bar_signal.connect(self.update_progress)
                 some_task.my_signals.label_info_signal.connect(self.update_label)
                 self.thread_pool.start(some_task)
-
+            print('Все задачи запущены')
 
     def update_label(self, value):
         self.label_progress_description.setText(value)
