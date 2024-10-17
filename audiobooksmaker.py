@@ -1,4 +1,4 @@
-# main.py
+# audiobooksmaker.py
 import os
 import sys
 from time import sleep
@@ -7,8 +7,7 @@ os.environ['PATH'] += os.pathsep + os.path.abspath('external')
 
 from PyQt5.QtCore import QThreadPool
 from PyQt5.QtWidgets import QMainWindow, QApplication, QMessageBox  # Импортируем класс QMainWindow и QApplication
-from core import MetadataManager, ConverterSignals, Converter, \
-    M4BMerger  # Подключаем MetadataManager из core/metadata.py
+from core import MetadataManager, ConverterSignals, Converter, M4BMerger  # Подключаем MetadataManager из core/metadata.py
 from data import Config  # Подключаем Config из data/config
 from data import FileManager  # Подключаем FileManager из data/file_manager
 from gui import Ui_MainWindow  # Подключаем класс MainWindow из gui.py
@@ -19,15 +18,10 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         super(AudiobookCreator, self).__init__()
         self.setupUi(self)
         Config.load_config()  # Загружаем конфигурацию при запуске приложения
-
         self.setWindowTitle(Config.WINDOWTITLE)
-
         self.file_manager = FileManager()
         self.metadata_manager = MetadataManager(self.label_cover_of_book)
-        # self.audio_processor = AudioProcessor(ffmpeg_path=Config.FFMPEG_PATH)  # Укажите путь к ffmpeg
-
         self.progressBar.setValue(0)  # Устанавливаем начальное значение
-
         self.init_ui()
         self.convertermanager()
 
@@ -46,10 +40,8 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
     def convertermanager(self):
         self.thread_pool = QThreadPool()
         self.audibook_converter_signals = ConverterSignals()
-        self.audibook_converter_signals.label_info_signal.connect(
-            self.update_label)  # Подключаем вывод сообщений в label интерфейса
-        self.audibook_converter_signals.all_tasks_completed.connect(
-            self.on_all_tasks_completed)  # Подключаем сигнал завершения всех задач
+        self.audibook_converter_signals.label_info_signal.connect(self.update_label)  # Подключаем вывод сообщений в label интерфейса
+        self.audibook_converter_signals.all_tasks_completed.connect(self.on_all_tasks_completed)  # Подключаем сигнал завершения всех задач
         self.audibook_converter_signals.progress_bar_signal.connect(self.update_progress)  # ???????????
 
     def get_metadata_widgets(self):
@@ -115,7 +107,6 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
 
             self.completed_tasks = 0  # Сбрасываем счетчик выполненных задач
             self.progressBar.setValue(0)  # Сбрасываем прогрессбар
-            # self.output_temp_files_list = []  # обнуляем список для хранения временных файлов аудиофайлов
             self.quantity = len(file_paths)  # подсчитываем общее количество файлов
             self.output_temp_files_list = [None] * self.quantity  # Инициализируем список с None для каждого файла
 
@@ -141,6 +132,9 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         if self.completed_tasks == self.quantity:
             self.audibook_converter_signals.all_tasks_completed.emit()
 
+    def update_progress_2(self, value):
+        self.progressBar.setValue(value)
+
     def on_all_tasks_completed(self):
         """Вызывается при завершении всех задач."""
         self.temp_files_list = [f.name for f in self.output_temp_files_list]
@@ -150,22 +144,21 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
 
         m4bmerger = M4BMerger(self.temp_files_list, self.output_path, self.metadata)
         m4bmerger.my_signals.all_files_merged.connect(self.end_of_merge)
-        # m4bmerger.my_signals.progress_bar_signal(self.update_progress)
+        m4bmerger.my_signals.progress_bar_signal.connect(self.update_progress_2) #####
         m4bmerger.my_signals.label_info_signal.connect(self.update_label)
         self.thread_pool.start(m4bmerger)
 
         # self.delete_temp_files(temp_files_list)
 
     def end_of_merge(self):
-        # self.audibook_converter_signals.label_info_signal.emit('Файлы объеденены')
         self.delete_temp_files(self.temp_files_list)
 
     def delete_temp_files(self, temp_files_list):
         for temp_file in temp_files_list:
             if temp_file:
                 os.remove(temp_file)  # Удаляем временные файлы
-        self.audibook_converter_signals.label_info_signal.emit(f'Все готово, файл аудиокниги здесь: {self.output_path}')
-
+        self.audibook_converter_signals.label_info_signal.emit(f'Работа завершена, файл аудиокниги здесь: {self.output_path}')
+        self.progressBar.setValue(100)
 
 
 if __name__ == '__main__':

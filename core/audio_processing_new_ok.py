@@ -26,6 +26,7 @@ class M4BMerger(QRunnable):
     def merge_files(self):
         """Объединяем m4b файлы с помощью ffmpeg, используя временный список файлов."""
         self.my_signals.label_info_signal.emit('Начинаю объединять файлы')
+        self.my_signals.progress_bar_signal.emit(30)
         try:
             with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_file:
                 for file_data in self.input_files:
@@ -52,6 +53,7 @@ class M4BMerger(QRunnable):
 
     def add_cover_and_metadata(self, output_path, metadata):
         self.my_signals.label_info_signal.emit('Добавляю метаданные')
+        self.my_signals.progress_bar_signal.emit(60)
         audio = MP4(output_path)
 
         # Добавление метаданных
@@ -66,7 +68,7 @@ class M4BMerger(QRunnable):
         if cover_image_bytes := metadata.get('image_data'):
             cover = MP4Cover(cover_image_bytes, imageformat=MP4Cover.FORMAT_JPEG)
             audio['covr'] = [cover]
-
+        self.my_signals.progress_bar_signal.emit(90)
         self.my_signals.label_info_signal.emit('Сохраняю файл')
         audio.save()
 
