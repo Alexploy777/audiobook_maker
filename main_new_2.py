@@ -158,7 +158,7 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
     def delete_temp_files(self, temp_files_list):
         for temp_file in temp_files_list:
             if temp_file:
-                os.remove(temp_file)  # Удаляем временный файл
+                os.remove(temp_file)  # Удаляем временные файлы
 
 
 if __name__ == '__main__':
