@@ -2,6 +2,7 @@ import subprocess
 import sys
 from PyQt5.QtCore import QRunnable, pyqtSignal, QObject, pyqtSlot
 from PyQt5.QtWidgets import QMessageBox
+from mutagen.mp4 import MP4Cover, MP4
 from pydub import AudioSegment
 import tempfile
 import os
@@ -15,14 +16,16 @@ class ConverterSignals(QObject):
 
 
 class M4BMerger(QRunnable):
-    def __init__(self, input_files, output_file):
+    def __init__(self, input_files, output_file, metadata):
         super().__init__()
         self.input_files = input_files  # Список буферов аудиофайлов
         self.output_file = output_file  # Финальный выходной файл
+        self.metadata = metadata
         self.my_signals = ConverterSignals()
 
     def merge_files(self):
         """Объединяем m4b файлы с помощью ffmpeg, используя временный список файлов."""
+        self.my_signals.label_info_signal.emit('Начинаю объединять файлы')
         try:
             with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_file:
                 for file_data in self.input_files:
@@ -47,9 +50,31 @@ class M4BMerger(QRunnable):
         finally:
             os.remove(temp_file.name)  # Удаляем временный файл списка после завершения работы
 
+    def add_cover_and_metadata(self, output_path, metadata):
+        self.my_signals.label_info_signal.emit('Добавляю метаданные')
+        audio = MP4(output_path)
+
+        # Добавление метаданных
+        audio['\xa9nam'] = metadata.get("title")
+        audio['\xa9ART'] = metadata.get("artist")
+        audio['\xa9alb'] = metadata.get("album")
+        audio['\xa9day'] = metadata.get("year")
+        audio['\xa9gen'] = metadata.get("genre")
+
+        ####     update_progress
+
+        if cover_image_bytes := metadata.get('image_data'):
+            cover = MP4Cover(cover_image_bytes, imageformat=MP4Cover.FORMAT_JPEG)
+            audio['covr'] = [cover]
+
+        self.my_signals.label_info_signal.emit('Сохраняю файл')
+        audio.save()
+
+
     def run(self):
         """Основной метод для выполнения всех шагов."""
         self.merge_files()
+        self.add_cover_and_metadata(self.output_file, self.metadata)
         self.my_signals.all_files_merged.emit()
 
 

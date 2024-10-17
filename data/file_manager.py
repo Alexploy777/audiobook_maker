@@ -57,3 +57,4 @@ class FileManager:
             return output_file_path
         else:
             QMessageBox.warning(None, "Предупреждение", "Не выбран путь для сохранения файла.")
+            return None
