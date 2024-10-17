@@ -19,11 +19,12 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         Config.load_config()  # Загружаем конфигурацию при запуске приложения
         self.setWindowTitle(Config.WINDOWTITLE)
-        self.file_manager = FileManager()
+        self.file_manager = FileManager(self)
         self.metadata_manager = MetadataManager(self.label_cover_of_book)
         self.progressBar.setValue(0)  # Устанавливаем начальное значение
         self.init_ui()
         self.convertermanager()
+
 
     def init_ui(self):
         self.comboBox_audio_quality.addItems(Config.AUDIO_BITRATE_CHOICES)  # Добавляем варианты битрейта

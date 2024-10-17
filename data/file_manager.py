@@ -3,7 +3,9 @@ from PyQt5.QtWidgets import QFileDialog, QMessageBox, QListWidget
 
 
 class FileManager:
-    def __init__(self):
+    def __init__(self, audiobookcreator):
+        self.lineEdit_title = audiobookcreator.lineEdit_title
+        self.lineEdit_artist = audiobookcreator.lineEdit_artist
         self.file_paths = []
         self.cover_image_path = None
 
@@ -50,8 +52,9 @@ class FileManager:
             QMessageBox.warning(None, "Предупреждение", "Изображение не выбрано.")
 
     def get_output_file_path(self):
+        name = self.lineEdit_artist.text() + '-' + self.lineEdit_title.text()
         options = QFileDialog.Options()
-        output_file_path, _ = QFileDialog.getSaveFileName(None, "Выберите куда сохранить аудиокнигу", "",
+        output_file_path, _ = QFileDialog.getSaveFileName(None, "Выберите куда сохранить аудиокнигу", name,
                                                           "M4B Files (*.m4b);;All Files (*)", options=options)
         if output_file_path:
             return output_file_path
