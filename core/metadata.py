@@ -24,7 +24,8 @@ class MetadataManager:
             "artist": "",
             "album": "",
             "year": "",
-            "genre": ""
+            "genre": "",
+            "albumartist": "",
         }
         try:
             audio = MP3(file_path, ID3=ID3)
@@ -34,6 +35,7 @@ class MetadataManager:
                 "album": str(audio.get("TALB", "Unknown Album").text[0]),
                 "genre": str(audio.get("TCON", "Unknown Genre").text[0]),
                 "year": str(audio.get("TDRC", "Unknown Year").text[0]),
+                "albumartist": str(audio.get("TPE2", "Unknown Album Artist").text[0]),
             }
             self.metadata = metadata
             return metadata, audio

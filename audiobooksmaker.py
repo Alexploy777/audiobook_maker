@@ -52,7 +52,8 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
             self.lineEdit_album,
             self.lineEdit_year,
             self.lineEdit_genre,
-            self.label_cover_of_book
+            self.lineEdit_albumartist,
+            self.label_cover_of_book,
         )
 
     @staticmethod
@@ -79,6 +80,7 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.lineEdit_album.setText(metadata["album"])
         self.lineEdit_year.setText(metadata["year"])
         self.lineEdit_genre.setText(metadata["genre"])
+        self.lineEdit_albumartist.setText(metadata["albumartist"])
 
         self.metadata_manager.extract_and_show_cover(audio, self.label_cover_of_book)
 
@@ -102,6 +104,7 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
             metadata['album'] = self.lineEdit_album.text()
             metadata['year'] = self.lineEdit_year.text()
             metadata['genre'] = self.lineEdit_genre.text()
+            metadata['albumartist'] = self.lineEdit_albumartist.text()
             self.metadata = metadata
 
             print('Конвертация запущена')
