@@ -58,9 +58,10 @@ class MetadataManager:
             self.metadata['image_data'] = image_data
 
     def show_cover_image_path(self, cover_image_path):
-        with open(cover_image_path, 'rb') as f:
-            image_data = f.read()
-        self.show_cover_image(image_data)
+        if cover_image_path:
+            with open(cover_image_path, 'rb') as f:
+                image_data = f.read()
+            self.show_cover_image(image_data)
 
     def extract_and_show_cover(self, audio, label_cover_of_book):
         if audio is None:

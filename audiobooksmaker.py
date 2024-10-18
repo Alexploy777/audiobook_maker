@@ -143,7 +143,9 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
             print('Все задачи запущены')
 
     def update_label(self, value):
-        self.label_progress_description.setText(value)
+        max_length = 50
+        shortened_text = value[:max_length] + '...' if len(value) > max_length else value
+        self.label_progress_description.setText(shortened_text)
 
     def update_progress(self):
         """Обновляет прогрессбар на основании выполнения задач."""
