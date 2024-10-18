@@ -5,12 +5,14 @@ from time import sleep
 
 os.environ['PATH'] += os.pathsep + os.path.abspath('external')
 
-from PyQt5.QtCore import QThreadPool, QTimer
+from PyQt5.QtCore import QThreadPool, QTimer, QTime
 from PyQt5.QtWidgets import QMainWindow, QApplication, QMessageBox  # Импортируем класс QMainWindow и QApplication
-from core import MetadataManager, ConverterSignals, Converter, M4BMerger  # Подключаем MetadataManager из core/metadata.py
+from core import MetadataManager, ConverterSignals, Converter, \
+    M4BMerger  # Подключаем MetadataManager из core/metadata.py
 from data import Config  # Подключаем Config из data/config
 from data import FileManager  # Подключаем FileManager из data/file_manager
 from gui import Ui_MainWindow  # Подключаем класс MainWindow из gui.py
+from utils import Timer
 
 
 class AudiobookCreator(QMainWindow, Ui_MainWindow):
@@ -23,8 +25,8 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.metadata_manager = MetadataManager(self.label_cover_of_book)
         self.progressBar.setValue(0)  # Устанавливаем начальное значение
         self.init_ui()
-        self.convertermanager()
-
+        self.init_convertermanager()
+        self.timer = Timer(self.lcdNumber)
 
     def init_ui(self):
         self.comboBox_audio_quality.addItems(Config.AUDIO_BITRATE_CHOICES)  # Добавляем варианты битрейта
@@ -38,13 +40,25 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.pushButton_convert.clicked.connect(self.start_conversion)  # connect - для конвертации
         self.pushButton_stop_and_clean.clicked.connect(self.stop_and_clean)  # connect - для остановки конвертации
 
-    def convertermanager(self):
+    def init_convertermanager(self):
         self.thread_pool = QThreadPool()
         self.audibook_converter_signals = ConverterSignals()
-        self.audibook_converter_signals.label_info_signal.connect(self.update_label)  # Подключаем вывод сообщений в label интерфейса
-        self.audibook_converter_signals.all_tasks_completed.connect(self.on_all_tasks_completed)  # Подключаем сигнал завершения всех задач
+        self.audibook_converter_signals.label_info_signal.connect(
+            self.update_label)  # Подключаем вывод сообщений в label интерфейса
+        self.audibook_converter_signals.all_tasks_completed.connect(
+            self.on_all_tasks_completed)  # Подключаем сигнал завершения всех задач
         self.audibook_converter_signals.progress_bar_signal.connect(self.update_progress)  # ???????????
-        self.stop_flag = False # флага останова нет
+        self.stop_flag = False  # флага останова нет
+
+    # def init_timer(self):
+    #     self.time = QTime(0, 0, 0)
+    #     self.timer = QTimer(self)  # Создаем таймер, который будет обновляться каждую секунду
+    #     self.timer.timeout.connect(self.update_time)
+
+    # def update_time(self):
+    #     self.time = self.time.addSecs(1)  # Увеличиваем время на 1 секунду
+    #     time_text = self.time.toString("mm.ss")  # Форматируем время в формате MM:SS
+    #     self.lcdNumber.display(time_text)  # Обновляем QLCDNumber
 
     def get_metadata_widgets(self):
         return (
@@ -90,27 +104,12 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.metadata_manager.show_cover_image_path(cover_image_path)
 
     def stop_and_clean(self):
-        print('STOP')
-        self.stop_flag = True
-
-    # def start_delay(self):
-    #     self.counter = 5  # Начальное значение счетчика
-    #     self.timer = QTimer()
-    #     self.timer.timeout.connect(self.update_counter)  # Соединение сигнала таймера с функцией обновления
-    #     self.timer.start(1000)  # Запуск таймера с интервалом в 1 секунду (1000 мс)
-    #
-    # def update_counter(self):
-    #     if self.counter > 0:
-    #         self.audibook_converter_signals.label_info_signal.emit(f'Стартуем через {self.counter} секунд')
-    #         self.counter -= 1
-    #     else:
-    #         self.timer.stop()  # Остановка таймера, когда счетчик достигает 0
-    #         self.audibook_converter_signals.label_info_signal.emit('Конвертация началась!')
+        pass
 
     def start_conversion(self):
         if output_path := self.file_manager.get_output_file_path():
-            # self.stop_flag = False
-            # self.start_delay()
+            self.timer.reset_timer()
+            self.timer.start_timer()
             self.output_path = output_path
             self.audibook_converter_signals.label_info_signal.emit('Подготовка к работе..')
 
@@ -133,10 +132,11 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
             self.quantity = len(file_paths)  # подсчитываем общее количество файлов
             self.output_temp_files_list = [None] * self.quantity  # Инициализируем список с None для каждого файла
 
-        # Запускаем задачи
+            # Запускаем задачи
             for index, file in enumerate(file_paths):
                 some_task = Converter(index=index, quantity=self.quantity, file=file,
-                                      output_temp_files_list=self.output_temp_files_list, bitrate=bitrate, stop_flag=self.stop_flag)
+                                      output_temp_files_list=self.output_temp_files_list, bitrate=bitrate,
+                                      stop_flag=self.stop_flag)
                 some_task.my_signals.progress_bar_signal.connect(self.update_progress)
                 some_task.my_signals.label_info_signal.connect(self.update_label)
                 self.thread_pool.start(some_task)
@@ -167,7 +167,7 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
 
         m4bmerger = M4BMerger(self.temp_files_list, self.output_path, self.metadata)
         m4bmerger.my_signals.all_files_merged.connect(self.end_of_merge)
-        m4bmerger.my_signals.progress_bar_signal.connect(self.update_progress_2) #####
+        m4bmerger.my_signals.progress_bar_signal.connect(self.update_progress_2)  #####
         m4bmerger.my_signals.label_info_signal.connect(self.update_label)
         self.thread_pool.start(m4bmerger)
 
@@ -180,8 +180,10 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         for temp_file in temp_files_list:
             if temp_file:
                 os.remove(temp_file)  # Удаляем временные файлы
-        self.audibook_converter_signals.label_info_signal.emit(f'Работа завершена, файл аудиокниги здесь: {self.output_path}')
+        self.audibook_converter_signals.label_info_signal.emit(
+            f'Работа завершена, файл аудиокниги здесь: {self.output_path}')
         self.progressBar.setValue(100)
+        self.timer.stop_timer()
 
 
 if __name__ == '__main__':
