@@ -1,7 +1,10 @@
 # audiobooksmaker.py
 import os
+import subprocess
 import sys
 from time import sleep
+import win32gui
+import win32con
 
 os.environ['PATH'] += os.pathsep + os.path.abspath('external')
 
@@ -16,6 +19,7 @@ from utils import Timer
 
 
 class AudiobookCreator(QMainWindow, Ui_MainWindow):
+
     def __init__(self):
         super(AudiobookCreator, self).__init__()
         self.setupUi(self)
@@ -27,6 +31,7 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.init_ui()
         self.init_convertermanager()
         self.timer = Timer(self.lcdNumber)
+        self.output_path = ''
 
     def init_ui(self):
         self.comboBox_audio_quality.addItems(Config.AUDIO_BITRATE_CHOICES)  # Добавляем варианты битрейта
@@ -39,6 +44,8 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.pushButton_upload_cover.clicked.connect(self.upload_cover)  # connect - для загрузки обложки пользователя
         self.pushButton_convert.clicked.connect(self.start_conversion)  # connect - для конвертации
         self.pushButton_stop_and_clean.clicked.connect(self.stop_and_clean)  # connect - для остановки конвертации
+        self.pushButton_openDir.clicked.connect(self.open_folder_with_file)
+
 
     def init_convertermanager(self):
         self.thread_pool = QThreadPool()
@@ -50,15 +57,43 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.audibook_converter_signals.progress_bar_signal.connect(self.update_progress)  # ???????????
         self.stop_flag = False  # флага останова нет
 
-    # def init_timer(self):
-    #     self.time = QTime(0, 0, 0)
-    #     self.timer = QTimer(self)  # Создаем таймер, который будет обновляться каждую секунду
-    #     self.timer.timeout.connect(self.update_time)
+    def open_folder_with_file(self):
+        # Получаем путь к папке
+        if folder_path := os.path.dirname(self.output_path):
+            self.showMinimized()
+            # Проверяем операционную систему
+            if sys.platform == "win32":
+                # Правильный формат пути для Windows
+                normalized_path = os.path.normpath(self.output_path)
+                subprocess.Popen(f'explorer /select,"{normalized_path}"')
+                # Задержка, чтобы дать время открыться окну проводника
+                sleep(1)
 
-    # def update_time(self):
-    #     self.time = self.time.addSecs(1)  # Увеличиваем время на 1 секунду
-    #     time_text = self.time.toString("mm.ss")  # Форматируем время в формате MM:SS
-    #     self.lcdNumber.display(time_text)  # Обновляем QLCDNumber
+                # Находим и выводим окно проводника наверх
+                def bring_explorer_to_front():
+                    def enum_window_callback(hwnd, _):
+                        if win32gui.IsWindowVisible(hwnd):
+                            title = win32gui.GetWindowText(hwnd)
+                            if "explorer" in title.lower():
+                                # Устанавливаем окно наверх
+                                win32gui.SetForegroundWindow(hwnd)
+                                win32gui.SetWindowPos(hwnd, win32con.HWND_TOPMOST, 0, 0, 0, 0,
+                                                      win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
+                                # Убираем свойство "всегда наверху", чтобы оно не оставалось
+                                win32gui.SetWindowPos(hwnd, win32con.HWND_NOTOPMOST, 0, 0, 0, 0,
+                                                      win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
+
+                    win32gui.EnumWindows(enum_window_callback, None)
+
+                bring_explorer_to_front()
+
+
+            elif sys.platform == "darwin":
+                subprocess.Popen(["open", "-R", self.output_path])
+            else:
+                subprocess.Popen(["xdg-open", folder_path])
+
+
 
     def get_metadata_widgets(self):
         return (
