@@ -39,14 +39,15 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.comboBox_audio_quality.currentTextChanged.connect(
             self.update_audio_bitrate)  # connect - при выборе другого битрейта
         self.pushButton.clicked.connect(self.add_files)  # connect - для добавления файлов
-        # self.listWidget.itemSelectionChanged.connect(self.display_metadata)  # При выборе/выделении файла
-        self.listWidget.selectionChanged.connect(self.display_metadata)
+        self.listWidget.itemSelectionChanged.connect(self.display_metadata)  # При выборе/выделении файла
         self.pushButton_2.clicked.connect(self.remove_selected_files)  # connect - для удаления выделенных файлов
         self.pushButton_upload_cover.clicked.connect(self.upload_cover)  # connect - для загрузки обложки пользователя
         self.pushButton_convert.clicked.connect(self.start_conversion)  # connect - для конвертации
         self.pushButton_stop_and_clean.clicked.connect(self.stop_and_clean)  # connect - для остановки конвертации
         self.pushButton_openDir.clicked.connect(self.open_folder_with_file)
+        self.listWidget.setAcceptDrops(True)
         self.listWidget.dropEvent = self.dropEvent
+
 
     def init_convertermanager(self):
         self.thread_pool = QThreadPool()
@@ -59,28 +60,24 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.stop_flag = False  # флага останова нет
 
     def dropEvent(self, event):
-        print("Drop event triggered")  # Отладочное сообщение
         # Получаем список файлов из события
         for url in event.mimeData().urls():
-            file_path = url.toLocalFile()  # Получаем локальный путь
-            print(f"Dropped: {file_path}")  # Отладочное сообщение
+            file_path = url.toLocalFile()
             if os.path.isfile(file_path) and file_path.lower().endswith('.mp3'):
-                # Добавляем файл в QPlainTextEdit без префикса
-                self.listWidget.appendPlainText(file_path)
+                # Добавляем файл в QListWidget
+                self.listWidget.addItem(os.path.basename(file_path))
             elif os.path.isdir(file_path):
                 # Если это папка, добавляем все mp3 файлы из нее
                 for root, _, files in os.walk(file_path):
                     for file in files:
                         if file.lower().endswith('.mp3'):
-                            full_path = os.path.join(root, file)  # Полный путь к файлу
-                            self.listWidget.appendPlainText(full_path)
+                            self.listWidget.addItem(file)
 
 
     def open_folder_with_file(self):
         # Получаем путь к папке
         if folder_path := os.path.dirname(self.output_path):
             self.showMinimized()
-
             # Проверяем операционную систему
             if sys.platform == "win32":
                 # Правильный формат пути для Windows
