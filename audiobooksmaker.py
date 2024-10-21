@@ -3,8 +3,6 @@ import os
 import subprocess
 import sys
 from time import sleep
-import win32gui
-import win32con
 
 os.environ['PATH'] += os.pathsep + os.path.abspath('external')
 
@@ -48,7 +46,6 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.listWidget.setAcceptDrops(True)
         self.listWidget.dropEvent = self.dropEvent
 
-
     def init_convertermanager(self):
         self.thread_pool = QThreadPool()
         self.audibook_converter_signals = ConverterSignals()
@@ -72,7 +69,6 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
                     for file in files:
                         if file.lower().endswith('.mp3'):
                             self.listWidget.addItem(file)
-
 
     def open_folder_with_file(self):
         # Получаем путь к папке
