@@ -43,8 +43,8 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.pushButton_convert.clicked.connect(self.start_conversion)  # connect - для конвертации
         self.pushButton_stop_and_clean.clicked.connect(self.stop_and_clean)  # connect - для остановки конвертации
         self.pushButton_openDir.clicked.connect(self.open_folder_with_file)
-        self.listWidget.setAcceptDrops(True)
-        self.listWidget.dropEvent = self.dropEvent
+        # self.listWidget.setAcceptDrops(True)
+        # self.listWidget.dropEvent = self.dropEvent
 
     def init_convertermanager(self):
         self.thread_pool = QThreadPool()
@@ -54,7 +54,7 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.audibook_converter_signals.all_tasks_completed.connect(
             self.on_all_tasks_completed)  # Подключаем сигнал завершения всех задач
         self.audibook_converter_signals.progress_bar_signal.connect(self.update_progress)  # ???????????
-        self.stop_flag = False  # флага останова нет
+        # self.stop_flag = False  # флага останова нет
 
     def dropEvent(self, event):
         # Получаем список файлов из события
