@@ -9,7 +9,7 @@ class FileManager:
         self.file_paths = []
         self.cover_image_path = None
 
-    def add_files(self, listwidget: QListWidget) -> None:
+    def add_files(self, listwidget) -> None:
         """
             Добавляет выбранные MP3 файлы из выбранной папки в список.
 
@@ -23,10 +23,10 @@ class FileManager:
             for path in file_paths:
                 if path not in self.file_paths:
                     self.file_paths.append(path)
-                    listwidget.addItem(path)
+                    listwidget.appendPlainText(path)
                 else:
                     QMessageBox.warning(None, "Предупреждение", f"Файл {path} уже добавлен.")
-            if listwidget.count() > 0:
+            if listwidget.font() > 0:
                 listwidget.setCurrentRow(0)  # Выделяется первый элемент списка
 
 
