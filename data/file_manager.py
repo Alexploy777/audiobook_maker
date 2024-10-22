@@ -29,7 +29,6 @@ class FileManager:
             if listwidget.count() > 0:
                 listwidget.setCurrentRow(0)  # Выделяется первый элемент списка
 
-
     def remove_files(self, listwidget):
         selected_items = listwidget.selectedItems()
         if not selected_items:
