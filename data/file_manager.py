@@ -19,6 +19,7 @@ class FileManager:
         options = QFileDialog.Options()
         file_paths, _ = QFileDialog.getOpenFileNames(None, "Выберите MP3 файлы", "", "MP3 Files (*.mp3);;All Files (*)",
                                                      options=options)
+
         if file_paths:
             for path in file_paths:
                 if path not in self.file_paths:

@@ -6,7 +6,7 @@ from time import sleep
 
 os.environ['PATH'] += os.pathsep + os.path.abspath('external')
 
-from PyQt5.QtCore import QThreadPool, QTimer, QTime
+from PyQt5.QtCore import QThreadPool, QTimer, QTime, Qt
 from PyQt5.QtWidgets import QMainWindow, QApplication, QMessageBox  # Импортируем класс QMainWindow и QApplication
 from core import MetadataManager, ConverterSignals, Converter, \
     M4BMerger  # Подключаем MetadataManager из core/metadata.py
@@ -57,6 +57,7 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         # self.stop_flag = False  # флага останова нет
 
     def dropEvent(self, event):
+        print('dropEvent')
         # Получаем список файлов из события
         for url in event.mimeData().urls():
             file_path = url.toLocalFile()
@@ -69,6 +70,16 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
                     for file in files:
                         if file.lower().endswith('.mp3'):
                             self.listWidget.addItem(file)
+        self.get_files()
+
+    def get_files(self):
+        files = []
+        for i in range(self.listWidget.count()):
+            item = self.listWidget.item(i)
+            file_path = item.data(Qt.UserRole)
+            files.append(file_path)
+        print(files)
+
 
     def open_folder_with_file(self):
         # Получаем путь к папке
@@ -140,6 +151,8 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
             self.audibook_converter_signals.label_info_signal.emit('Подготовка к работе..')
 
             file_paths = self.file_manager.file_paths  # Возвращает список файлов для конвертации
+            print(file_paths)
+
             bitrate = Config.AUDIO_BITRATE
 
             metadata = self.metadata_manager.metadata
