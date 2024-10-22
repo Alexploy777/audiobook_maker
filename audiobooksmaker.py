@@ -70,16 +70,15 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
                     for file in files:
                         if file.lower().endswith('.mp3'):
                             self.listWidget.addItem(file)
-        self.get_files()
 
     def get_files(self):
-        files = []
+        print('get_files')
+        file_paths = []
         for i in range(self.listWidget.count()):
             item = self.listWidget.item(i)
-            file_path = item.data(Qt.UserRole)
-            files.append(file_path)
-        print(files)
-
+            file_path = item.text()
+            file_paths.append(file_path)
+        return file_paths
 
     def open_folder_with_file(self):
         # Получаем путь к папке
@@ -121,7 +120,6 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.listWidget.clear()
         self.timer.reset_timer()
 
-
     def display_metadata(self):
         selected_items = self.listWidget.selectedItems()
         if not selected_items:
@@ -150,8 +148,11 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
             self.output_path = output_path
             self.audibook_converter_signals.label_info_signal.emit('Подготовка к работе..')
 
-            file_paths = self.file_manager.file_paths  # Возвращает список файлов для конвертации
-            print(file_paths)
+            # file_paths = self.file_manager.file_paths  # Возвращает список файлов для конвертации
+            file_paths = self.get_files()
+            print('file_paths==', file_paths)
+
+            return
 
             bitrate = Config.AUDIO_BITRATE
 

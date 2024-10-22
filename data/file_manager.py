@@ -1,4 +1,6 @@
 # data/file_manager.py
+import os.path
+
 from PyQt5.QtWidgets import QFileDialog, QMessageBox, QListWidget
 
 
@@ -23,8 +25,8 @@ class FileManager:
         if file_paths:
             for path in file_paths:
                 if path not in self.file_paths:
-                    self.file_paths.append(path)
-                    listwidget.addItem(path)
+                    self.file_paths.append(os.path.abspath(path))
+                    listwidget.addItem(os.path.abspath(path))
                 else:
                     QMessageBox.warning(None, "Предупреждение", f"Файл {path} уже добавлен.")
             if listwidget.count() > 0:
