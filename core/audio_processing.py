@@ -78,7 +78,7 @@ class M4BMerger(QRunnable):
 
 
 class Converter(QRunnable):
-    def __init__(self, index, quantity, file, output_temp_files_list, bitrate, stop_flag):
+    def __init__(self, index, quantity, file, output_temp_files_list, bitrate):
         super().__init__()
         self.index = index
         self.quantity = quantity
@@ -86,18 +86,16 @@ class Converter(QRunnable):
         self.file = file
         self.output_temp_files_list = output_temp_files_list
         self.bitrate = bitrate
-        self.stop_flag = stop_flag
+
 
     @pyqtSlot()
     def run(self):
         """Запускает выполнение задания."""
-        if not self.stop_flag:
-            output_file = self.convert_mp3_to_m4b(self.file)
-            self.output_temp_files_list[self.index] = output_file
-            self.my_signals.progress_bar_signal.emit(self.index)  # Отправляем сигнал о завершении задания
-            self.my_signals.label_info_signal.emit(f'Файл {os.path.abspath(self.file)} успешно сконвертирован')
-        else:
-            self.my_signals.progress_bar_signal.emit(self.index)  # Отправляем сигнал о завершении задания
+        output_file = self.convert_mp3_to_m4b(self.file)
+        self.output_temp_files_list[self.index] = output_file
+        self.my_signals.progress_bar_signal.emit(self.index)  # Отправляем сигнал о завершении задания
+        self.my_signals.label_info_signal.emit(f'Файл {os.path.abspath(self.file)} успешно сконвертирован')
+
 
     def convert_mp3_to_m4b(self, input_path):
         try:

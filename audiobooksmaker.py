@@ -159,8 +159,7 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
             # Запускаем задачи
             for index, file in enumerate(file_paths):
                 some_task = Converter(index=index, quantity=self.quantity, file=file,
-                                      output_temp_files_list=self.output_temp_files_list, bitrate=bitrate,
-                                      stop_flag=self.stop_flag)
+                                      output_temp_files_list=self.output_temp_files_list, bitrate=bitrate)
                 some_task.my_signals.progress_bar_signal.connect(self.update_progress)
                 some_task.my_signals.label_info_signal.connect(self.update_label)
                 self.thread_pool.start(some_task)

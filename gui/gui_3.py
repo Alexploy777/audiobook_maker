@@ -50,6 +50,7 @@ class Ui_MainWindow(object):
         self.verticalLayout.addWidget(self.widget)
         self.listWidget = QtWidgets.QListWidget(self.groupBox_files)
         self.listWidget.setAcceptDrops(True)
+        self.listWidget.setDragDropMode(QtWidgets.QAbstractItemView.DragDrop)
         self.listWidget.setObjectName("listWidget")
         self.verticalLayout.addWidget(self.listWidget)
         self.gridLayout_2.addWidget(self.groupBox_files, 0, 0, 2, 1)
