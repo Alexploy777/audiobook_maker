@@ -1,11 +1,13 @@
 import subprocess
 import sys
-from PyQt5.QtCore import QRunnable, pyqtSignal, QObject, pyqtSlot
+from PyQt5.QtCore import QRunnable, pyqtSignal, QObject, pyqtSlot, QProcess
 from PyQt5.QtWidgets import QMessageBox
 from mutagen.mp4 import MP4Cover, MP4
 from pydub import AudioSegment
 import tempfile
 import os
+
+os.environ['FFMPEG_LOG_LEVEL'] = 'quiet'
 
 
 class ConverterSignals(QObject):
@@ -101,19 +103,12 @@ class Converter(QRunnable):
 
     def convert_mp3_to_m4b(self, input_path):
         try:
+            os.environ['FFMPEG_LOG_LEVEL'] = 'quiet'
             audio = AudioSegment.from_mp3(input_path)
             output_buffer = tempfile.NamedTemporaryFile(suffix='.m4b', delete=False)  # Создаем временный файл
 
-            # audio.export(output_buffer.name, format="mp4", codec="aac", bitrate=self.bitrate)
-            # output_buffer.close()  # Явно закрываем временный файл
-
-            # Явно вызываем ffmpeg с подавлением вывода через subprocess
-            ffmpeg_command = [
-                'ffmpeg', '-i', input_path, '-c:a', 'aac', '-b:a', self.bitrate, output_buffer.name
-            ]
-            subprocess.run(ffmpeg_command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                           creationflags=subprocess.CREATE_NO_WINDOW)
-
+            audio.export(output_buffer.name, format="mp4", codec="aac", bitrate=self.bitrate)
+            output_buffer.close()  # Явно закрываем временный файл
             print(f"Файл успешно конвертирован: {input_path}")
             return output_buffer
 

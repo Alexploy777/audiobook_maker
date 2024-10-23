@@ -5,7 +5,7 @@ import sys
 from time import sleep
 
 os.environ['PATH'] += os.pathsep + os.path.abspath('external')
-# os.environ['FFMPEG_LOG_LEVEL'] = 'quiet'
+os.environ['FFMPEG_LOG_LEVEL'] = 'quiet'
 
 from PyQt5.QtCore import QThreadPool, QTimer, QTime, Qt
 from PyQt5.QtWidgets import QMainWindow, QApplication, QMessageBox  # Импортируем класс QMainWindow и QApplication
@@ -221,6 +221,11 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         # print(temp_files_list)
         # QMessageBox.information(None, "Завершено", "Все задания выполнены!")
         self.audibook_converter_signals.label_info_signal.emit('Все файлы успешно конвертированы!')
+
+        self.timer.stop_timer()
+        self.update_label('  ОСТАНОВКА!  ')
+        print('  ОСТАНОВКА!  ')
+        return
 
         m4bmerger = M4BMerger(self.temp_files_list, self.output_path, self.metadata)
         m4bmerger.my_signals.all_files_merged.connect(self.end_of_merge)
