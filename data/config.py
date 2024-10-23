@@ -20,6 +20,7 @@ class Config:
     FFMPEG_PATH = "external\\ffmpeg.exe"
     FFMPEG_LOG_LEVEL = "info"
     CONFIG_FILE = "config.json"
+    ALLOWED_EXTENSIONS = ('.mp3')
 
     @classmethod
     def load_config(cls):

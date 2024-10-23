@@ -23,6 +23,7 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         Config.load_config()  # Загружаем конфигурацию при запуске приложения
         self.setWindowTitle(Config.WINDOWTITLE)
+        self.allowed_extensions = tuple(Config.ALLOWED_EXTENSIONS)
         self.file_manager = FileManager(self)
         self.metadata_manager = MetadataManager(self.label_cover_of_book)
         self.progressBar.setValue(0)  # Устанавливаем начальное значение
@@ -45,17 +46,16 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.pushButton_stop_and_clean.clicked.connect(self.cleann_all)  # connect - для очистки всего
         self.pushButton_openDir.clicked.connect(self.open_folder_with_file)
 
-
     def replacing_widget(self):
         # Удаляем старый listWidget из компоновки
         self.verticalLayout.removeWidget(self.listWidget)
         self.listWidget.deleteLater()  # Удаляем стандартный listWidget
 
-        # Создаем кастомный CustomListWidget
-        self.newListWidget = CustomListWidget(self.groupBox_files)
+        print(self.allowed_extensions)
+        self.newListWidget = CustomListWidget(self.allowed_extensions,
+                                              parent=self.groupBox_files)  # Создаем кастомный CustomListWidget
 
-        # Добавляем новый виджет в компоновку на место старого
-        self.verticalLayout.addWidget(self.newListWidget)
+        self.verticalLayout.addWidget(self.newListWidget)  # Добавляем новый виджет в компоновку на место старого
 
     def init_convertermanager(self):
         self.thread_pool = QThreadPool()
@@ -65,22 +65,6 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.audibook_converter_signals.all_tasks_completed.connect(
             self.on_all_tasks_completed)  # Подключаем сигнал завершения всех задач
         self.audibook_converter_signals.progress_bar_signal.connect(self.update_progress)  # ???????????
-        # self.stop_flag = False  # флага останова нет
-
-    # def dropEvent(self, event):
-    #     print('dropEvent')
-    #     # Получаем список файлов из события
-    #     for url in event.mimeData().urls():
-    #         file_path = url.toLocalFile()
-    #         if os.path.isfile(file_path) and file_path.lower().endswith('.mp3'):
-    #             # Добавляем файл в QListWidget
-    #             self.listWidget.addItem(os.path.basename(file_path))
-    #         elif os.path.isdir(file_path):
-    #             # Если это папка, добавляем все mp3 файлы из нее
-    #             for root, _, files in os.walk(file_path):
-    #                 for file in files:
-    #                     if file.lower().endswith('.mp3'):
-    #                         self.listWidget.addItem(file)
 
     def get_files(self):
         print('get_files')
@@ -132,6 +116,7 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.newListWidget.clear()
         self.timer.reset_timer()
         self.metadata_manager.clear_metadata(*self.get_metadata_widgets())
+        self.progressBar.setValue(0)
 
     def display_metadata(self):
         selected_items = self.newListWidget.selectedItems()
@@ -160,12 +145,7 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
             self.timer.start_timer()
             self.output_path = output_path
             self.audibook_converter_signals.label_info_signal.emit('Подготовка к работе..')
-
-            # file_paths = self.file_manager.file_paths  # Возвращает список файлов для конвертации
-            file_paths = self.get_files()
-            print('file_paths==', file_paths)
-
-            return
+            file_paths = self.get_files()  # Берем из виджета список файлов для конвертации
 
             bitrate = Config.AUDIO_BITRATE
 
