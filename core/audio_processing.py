@@ -11,6 +11,7 @@ import os
 class ConverterSignals(QObject):
     progress_bar_signal = pyqtSignal(int)
     label_info_signal = pyqtSignal(str)
+    label_info_signal_2 = pyqtSignal(str)
     all_tasks_completed = pyqtSignal()  # Сигнал о завершении всех заданий
     all_files_merged = pyqtSignal()  # Сигнал об окончании объединения
 
@@ -94,7 +95,8 @@ class Converter(QRunnable):
         output_file = self.convert_mp3_to_m4b(self.file)
         self.output_temp_files_list[self.index] = output_file
         self.my_signals.progress_bar_signal.emit(self.index)  # Отправляем сигнал о завершении задания
-        self.my_signals.label_info_signal.emit(f'Файл {os.path.abspath(self.file)} успешно сконвертирован')
+        self.my_signals.label_info_signal.emit(f'сконвертирован файл:')
+        self.my_signals.label_info_signal_2.emit(f'{os.path.abspath(self.file)}')
 
 
     def convert_mp3_to_m4b(self, input_path):

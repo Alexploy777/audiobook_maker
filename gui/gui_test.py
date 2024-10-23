@@ -50,6 +50,8 @@ class Ui_MainWindow(object):
         self.verticalLayout.addWidget(self.widget)
         self.listWidget = QtWidgets.QListWidget(self.groupBox_files)
         self.listWidget.setAcceptDrops(True)
+        self.listWidget.setToolTip("")
+        self.listWidget.setWhatsThis("")
         self.listWidget.setDragDropMode(QtWidgets.QAbstractItemView.DragDrop)
         self.listWidget.setObjectName("listWidget")
         self.verticalLayout.addWidget(self.listWidget)
@@ -141,7 +143,7 @@ class Ui_MainWindow(object):
         self.pushButton_openDir.setObjectName("pushButton_openDir")
         self.gridLayout_4.addWidget(self.pushButton_openDir, 0, 1, 2, 1)
         self.lcdNumber = QtWidgets.QLCDNumber(self.ControlPanel)
-        self.lcdNumber.setMinimumSize(QtCore.QSize(0, 50))
+        self.lcdNumber.setMinimumSize(QtCore.QSize(180, 67))
         self.lcdNumber.setSmallDecimalPoint(False)
         self.lcdNumber.setObjectName("lcdNumber")
         self.gridLayout_4.addWidget(self.lcdNumber, 0, 2, 3, 1)
@@ -213,7 +215,6 @@ class Ui_MainWindow(object):
 
 if __name__ == "__main__":
     import sys
-
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()

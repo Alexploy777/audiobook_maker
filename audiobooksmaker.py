@@ -17,7 +17,7 @@ from utils import Timer
 
 
 class AudiobookCreator(QMainWindow, Ui_MainWindow):
-
+    file_paths = []
     def __init__(self):
         super(AudiobookCreator, self).__init__()
         self.setupUi(self)
@@ -54,12 +54,16 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.newListWidget = CustomListWidget(self.allowed_extensions,
                                               parent=self.groupBox_files)  # Создаем кастомный CustomListWidget
         self.verticalLayout.addWidget(self.newListWidget)  # Добавляем новый виджет в компоновку на место старого
+        self.newListWidget.setToolTip('Добавь файлы для создания аудиокниги')
+
 
     def init_convertermanager(self):
         self.thread_pool = QThreadPool()
         self.audibook_converter_signals = ConverterSignals()
         self.audibook_converter_signals.label_info_signal.connect(
             self.update_label)  # Подключаем вывод сообщений в label интерфейса
+        self.audibook_converter_signals.label_info_signal_2.connect(
+            self.update_label_2)  # Подключаем вывод сообщений в label 2 интерфейса
         self.audibook_converter_signals.all_tasks_completed.connect(
             self.on_all_tasks_completed)  # Подключаем сигнал завершения всех задач
         self.audibook_converter_signals.progress_bar_signal.connect(self.update_progress)  # ???????????
@@ -115,6 +119,8 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.timer.reset_timer()
         self.metadata_manager.clear_metadata(*self.get_metadata_widgets())
         self.progressBar.setValue(0)
+        self.update_label('Добавь файлы для создания новой книги')
+        self.update_label_2('Или брось целиком папку в окно')
 
     def display_metadata(self):
         selected_items = self.newListWidget.selectedItems()
@@ -137,13 +143,25 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         cover_image_path = self.file_manager.upload_cover()
         self.metadata_manager.show_cover_image_path(cover_image_path)
 
+    def checking_all_data(self):
+        self.output_path = self.file_manager.get_output_file_path()
+        self.audibook_converter_signals.label_info_signal_2.emit(f'{self.output_path}')
+        if file_paths := self.get_files():
+            self.file_paths = file_paths
+        else:
+            QMessageBox.warning(self, "Предупреждение", "Не выбраны файлы для аудиокниги")
+            self.file_paths = []
+        if self.output_path and self.file_paths:
+            return True
+        else:
+            return False
+
+
     def start_conversion(self):
-        if output_path := self.file_manager.get_output_file_path():
+        if self.checking_all_data():
             self.timer.reset_timer()
             self.timer.start_timer()
-            self.output_path = output_path
-            self.audibook_converter_signals.label_info_signal.emit('Подготовка к работе..')
-            file_paths = self.get_files()  # Берем из виджета список файлов для конвертации
+            self.audibook_converter_signals.label_info_signal.emit('Запустил конвертацию..')
 
             bitrate = Config.AUDIO_BITRATE
 
@@ -160,22 +178,28 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
 
             self.completed_tasks = 0  # Сбрасываем счетчик выполненных задач
             self.progressBar.setValue(0)  # Сбрасываем прогрессбар
-            self.quantity = len(file_paths)  # подсчитываем общее количество файлов
+            self.quantity = len(self.file_paths)  # подсчитываем общее количество файлов
             self.output_temp_files_list = [None] * self.quantity  # Инициализируем список с None для каждого файла
 
             # Запускаем задачи
-            for index, file in enumerate(file_paths):
+            for index, file in enumerate(self.file_paths):
                 some_task = Converter(index=index, quantity=self.quantity, file=file,
                                       output_temp_files_list=self.output_temp_files_list, bitrate=bitrate)
                 some_task.my_signals.progress_bar_signal.connect(self.update_progress)
                 some_task.my_signals.label_info_signal.connect(self.update_label)
+                some_task.my_signals.label_info_signal_2.connect(self.update_label_2)
                 self.thread_pool.start(some_task)
             print('Все задачи запущены')
 
     def update_label(self, value):
-        max_length = 50
+        max_length = 60
         shortened_text = value[:max_length] + '...' if len(value) > max_length else value
         self.label_progress_description.setText(shortened_text)
+
+    def update_label_2(self, value):
+        max_length = 90
+        shortened_text = value[:max_length] + '...' if len(value) > max_length else value
+        self.label_progress_description_2.setText(shortened_text)
 
     def update_progress(self):
         """Обновляет прогрессбар на основании выполнения задач."""
@@ -212,8 +236,8 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         for temp_file in temp_files_list:
             if temp_file:
                 os.remove(temp_file)  # Удаляем временные файлы
-        self.audibook_converter_signals.label_info_signal.emit(
-            f'Работа завершена, файл аудиокниги здесь: {self.output_path}')
+        self.audibook_converter_signals.label_info_signal.emit(f'Работа завершена, файл аудиокниги здесь:')
+        self.audibook_converter_signals.label_info_signal_2.emit(f'{self.output_path}')
         self.progressBar.setValue(100)
         self.timer.stop_timer()
 

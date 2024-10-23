@@ -98,6 +98,12 @@
                                             <property name="acceptDrops">
                                                 <bool>true</bool>
                                             </property>
+                                            <property name="toolTip">
+                                                <string/>
+                                            </property>
+                                            <property name="whatsThis">
+                                                <string/>
+                                            </property>
                                             <property name="dragDropMode">
                                                 <enum>QAbstractItemView::DragDrop</enum>
                                             </property>
@@ -288,8 +294,8 @@
                                         <widget class="QLCDNumber" name="lcdNumber">
                                             <property name="minimumSize">
                                                 <size>
-                                                    <width>0</width>
-                                                    <height>50</height>
+                                                    <width>180</width>
+                                                    <height>67</height>
                                                 </size>
                                             </property>
                                             <property name="smallDecimalPoint">
