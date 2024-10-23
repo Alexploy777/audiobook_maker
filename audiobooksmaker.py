@@ -46,6 +46,7 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.pushButton_stop_and_clean.clicked.connect(self.cleann_all)  # connect - для очистки всего
         self.pushButton_openDir.clicked.connect(self.open_folder_with_file)
 
+
     def replacing_widget(self):
         # Удаляем старый listWidget из компоновки
         self.verticalLayout.removeWidget(self.listWidget)

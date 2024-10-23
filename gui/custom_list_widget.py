@@ -4,7 +4,7 @@ from PyQt5.QtCore import Qt
 
 
 class CustomListWidget(QListWidget):
-    def __init__(self, allowed_extensions, parent=None):
+    def __init__(self, parent=None):
         super(CustomListWidget, self).__init__(parent)
         self.setAcceptDrops(True)
         self.setDragDropMode(QAbstractItemView.InternalMove)  # Включаем внутреннее перемещение элементов
