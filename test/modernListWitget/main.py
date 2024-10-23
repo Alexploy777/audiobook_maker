@@ -12,12 +12,15 @@ class MyAplication(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         self.setWindowTitle('')
 
-        # Заменяем стандартный listWidget на кастомный CustomListWidget
-        self.newListWidget = CustomListWidget(self)
+        # Удаляем старый listWidget из компоновки
+        self.verticalLayout.removeWidget(self.listWidget)
+        self.listWidget.deleteLater()  # Удаляем стандартный listWidget
 
-        # Устанавливаем его на место старого listWidget
-        self.verticalLayout.replaceWidget(self.ui.listWidget, self.newListWidget)
-        self.listWidget.deleteLater()  # Удаляем старый виджет
+        # Создаем кастомный CustomListWidget
+        self.newListWidget = CustomListWidget(self.groupBox_files)
+
+        # Добавляем новый виджет в компоновку на место старого
+        self.verticalLayout.addWidget(self.newListWidget)
 
 
 if __name__ == '__main__':
