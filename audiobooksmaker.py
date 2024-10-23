@@ -50,11 +50,8 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         # Удаляем старый listWidget из компоновки
         self.verticalLayout.removeWidget(self.listWidget)
         self.listWidget.deleteLater()  # Удаляем стандартный listWidget
-
-        print(self.allowed_extensions)
         self.newListWidget = CustomListWidget(self.allowed_extensions,
                                               parent=self.groupBox_files)  # Создаем кастомный CustomListWidget
-
         self.verticalLayout.addWidget(self.newListWidget)  # Добавляем новый виджет в компоновку на место старого
 
     def init_convertermanager(self):

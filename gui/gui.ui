@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>896</width>
-    <height>759</height>
+       <width>694</width>
+       <height>755</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,23 +20,86 @@
       <item row="0" column="0" rowspan="2">
        <widget class="QGroupBox" name="groupBox_files">
         <property name="title">
-         <string>Файлы для обработки</string>
+            <string>Файлы и Кнопки</string>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout">
+            <property name="topMargin">
+                <number>0</number>
+            </property>
+            <property name="bottomMargin">
+                <number>9</number>
+            </property>
          <item>
-          <widget class="QPushButton" name="pushButton">
-           <property name="text">
-            <string>Добавить файлы</string>
-           </property>
-          </widget>
+             <widget class="QWidget" name="widget" native="true">
+                 <property name="minimumSize">
+                     <size>
+                         <width>0</width>
+                         <height>50</height>
+                     </size>
+                 </property>
+                 <layout class="QGridLayout" name="gridLayout_5">
+                     <item row="0" column="3">
+                         <widget class="QPushButton" name="pushButton_2">
+                             <property name="minimumSize">
+                                 <size>
+                                     <width>0</width>
+                                     <height>30</height>
+                                 </size>
+                             </property>
+                             <property name="text">
+                                 <string>Dell Selected</string>
+                             </property>
+                         </widget>
+                     </item>
+                     <item row="0" column="0">
+                         <widget class="QPushButton" name="pushButton">
+                             <property name="minimumSize">
+                                 <size>
+                                     <width>0</width>
+                                     <height>30</height>
+                                 </size>
+                             </property>
+                             <property name="text">
+                                 <string>Add Files</string>
+                             </property>
+                         </widget>
+                     </item>
+                     <item row="0" column="1">
+                         <widget class="QPushButton" name="pushButton_convert">
+                             <property name="minimumSize">
+                                 <size>
+                                     <width>0</width>
+                                     <height>30</height>
+                                 </size>
+                             </property>
+                             <property name="text">
+                                 <string>Convert</string>
+                             </property>
+                         </widget>
+                     </item>
+                     <item row="0" column="4">
+                         <widget class="QPushButton" name="pushButton_stop_and_clean">
+                             <property name="minimumSize">
+                                 <size>
+                                     <width>0</width>
+                                     <height>30</height>
+                                 </size>
+                             </property>
+                             <property name="text">
+                                 <string>Dell All</string>
+                             </property>
+                         </widget>
+                     </item>
+                 </layout>
+             </widget>
          </item>
          <item>
-          <widget class="QListWidget" name="listWidget"/>
-         </item>
-         <item>
-          <widget class="QPushButton" name="pushButton_2">
-           <property name="text">
-            <string>Удалить выбранные</string>
+             <widget class="QListWidget" name="listWidget">
+                 <property name="acceptDrops">
+                     <bool>true</bool>
+                 </property>
+                 <property name="dragDropMode">
+                     <enum>QAbstractItemView::DragDrop</enum>
            </property>
           </widget>
          </item>
@@ -46,7 +109,7 @@
       <item row="0" column="1">
        <widget class="QGroupBox" name="MetadataPanel">
         <property name="title">
-         <string>Панель  метаданных</string>
+            <string>Панель метаданных</string>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_6">
          <item>
@@ -191,44 +254,61 @@
       </item>
       <item row="4" column="0" colspan="2">
        <widget class="QGroupBox" name="ControlPanel">
+           <property name="minimumSize">
+               <size>
+                   <width>0</width>
+                   <height>100</height>
+               </size>
+           </property>
         <property name="title">
-         <string>Панель управления</string>
+            <string>Прогресс выполнения и информация</string>
         </property>
-        <layout class="QVBoxLayout" name="verticalLayout_9">
-         <item>
+           <layout class="QGridLayout" name="gridLayout_4" columnstretch="4,2,2">
+               <property name="topMargin">
+                   <number>0</number>
+               </property>
+               <item row="0" column="0">
           <widget class="QLabel" name="label_progress_description">
            <property name="text">
             <string>Имя выходного файла</string>
            </property>
           </widget>
          </item>
-         <item>
-          <widget class="QProgressBar" name="progressBar">
-           <property name="value">
-            <number>0</number>
+               <item row="0" column="1">
+                   <widget class="QPushButton" name="pushButton_openDir">
+                       <property name="minimumSize">
+                           <size>
+                               <width>0</width>
+                               <height>30</height>
+                           </size>
            </property>
-           <property name="textVisible">
-            <bool>false</bool>
+                       <property name="text">
+                           <string>Открыть папку</string>
            </property>
           </widget>
          </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout">
-           <item>
-            <widget class="QPushButton" name="pushButton_stop_and_clean">
-             <property name="text">
-              <string>Отменить и очистить</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="pushButton_convert">
-             <property name="text">
-              <string>Конвертировать</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
+               <item row="0" column="2" rowspan="2">
+                   <widget class="QLCDNumber" name="lcdNumber">
+                       <property name="minimumSize">
+                           <size>
+                               <width>0</width>
+                               <height>50</height>
+                           </size>
+                       </property>
+                       <property name="smallDecimalPoint">
+                           <bool>false</bool>
+                       </property>
+                   </widget>
+               </item>
+               <item row="1" column="0" colspan="2">
+                   <widget class="QProgressBar" name="progressBar">
+                       <property name="value">
+                           <number>0</number>
+                       </property>
+                       <property name="textVisible">
+                           <bool>false</bool>
+                       </property>
+                   </widget>
          </item>
         </layout>
        </widget>
@@ -265,7 +345,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>896</width>
+        <width>694</width>
      <height>21</height>
     </rect>
    </property>
