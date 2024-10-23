@@ -19,6 +19,7 @@ from utils import Timer
 
 class AudiobookCreator(QMainWindow, Ui_MainWindow):
     file_paths = []
+
     def __init__(self):
         super(AudiobookCreator, self).__init__()
         self.setupUi(self)
@@ -47,7 +48,6 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.pushButton_stop_and_clean.clicked.connect(self.cleann_all)  # connect - для очистки всего
         self.pushButton_openDir.clicked.connect(self.open_folder_with_file)
 
-
     def replacing_widget(self):
         # Удаляем старый listWidget из компоновки
         self.verticalLayout.removeWidget(self.listWidget)
@@ -56,7 +56,6 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
                                               parent=self.groupBox_files)  # Создаем кастомный CustomListWidget
         self.verticalLayout.addWidget(self.newListWidget)  # Добавляем новый виджет в компоновку на место старого
         self.newListWidget.setToolTip('Добавь файлы для создания аудиокниги')
-
 
     def init_convertermanager(self):
         self.thread_pool = QThreadPool()
@@ -157,7 +156,6 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         else:
             return False
 
-
     def start_conversion(self):
         if self.checking_all_data():
             self.timer.reset_timer()
@@ -222,11 +220,11 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         # QMessageBox.information(None, "Завершено", "Все задания выполнены!")
         self.audibook_converter_signals.label_info_signal.emit('Все файлы успешно конвертированы!')
 
-        self.timer.stop_timer()
-        self.update_label('  ОСТАНОВКА!  ')
-        print('  ОСТАНОВКА!  ')
-
-        return
+        # self.timer.stop_timer()
+        # self.update_label('  ОСТАНОВКА!  ')
+        # print('  ОСТАНОВКА!  ')
+        #
+        # return
 
         m4bmerger = M4BMerger(self.temp_files_list, self.output_path, self.metadata)
         m4bmerger.my_signals.all_files_merged.connect(self.end_of_merge)

@@ -17,7 +17,6 @@ class MetadataManager:
         for widget in args:
             widget.clear()
 
-    # @staticmethod
     def extract_metadata(self, file_path):
         metadata = {
             "title": "",
@@ -29,18 +28,20 @@ class MetadataManager:
         }
         try:
             audio = MP3(file_path, ID3=ID3)
-            metadata = {
-                "title": str(audio.get("TIT2", "Unknown Title").text[0]),
-                "artist": str(audio.get("TPE1", "Unknown Artist").text[0]),
-                "album": str(audio.get("TALB", "Unknown Album").text[0]),
-                "genre": str(audio.get("TCON", "Unknown Genre").text[0]),
-                "year": str(audio.get("TDRC", "Unknown Year").text[0]),
-                "albumartist": str(audio.get("TPE2", "Unknown Album Artist").text[0]),
-            }
+
+            # Для каждого тега проверяется наличие и извлечение значения с использованием get
+            metadata["title"] = str(audio.get("TIT2", [""])[0])
+            metadata["artist"] = str(audio.get("TPE1", [""])[0])
+            metadata["album"] = str(audio.get("TALB", [""])[0])
+            metadata["genre"] = str(audio.get("TCON", [""])[0])
+            metadata["year"] = str(audio.get("TDRC", [""])[0])
+            metadata["albumartist"] = str(audio.get("TPE2", [""])[0])
+
             self.metadata = metadata
             return metadata, audio
+
         except Exception as e:
-            QMessageBox.warning(None, "Ошибка", f"Исключение {e.args[0]}")
+            QMessageBox.warning(None, "Ошибка", f"Произошло исключение: {str(e)}")
             return metadata, None
 
     def show_cover_image(self, image_data):
