@@ -27,6 +27,8 @@ class CustomListWidget(QListWidget):
                 else:
                     if file_path.endswith(('.mp3', '.m4a')):  # Если это файл с нужным расширением
                         self.addItem(file_path)
+            self.setCurrentRow(0)
+
 
     def _add_files_from_folder(self, folder_path):
         for root, dirs, files in os.walk(folder_path):

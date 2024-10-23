@@ -32,18 +32,19 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.output_path = ''
 
     def init_ui(self):
+        self.replacing_widget()
         self.comboBox_audio_quality.addItems(Config.AUDIO_BITRATE_CHOICES)  # Добавляем варианты битрейта
         self.comboBox_audio_quality.setCurrentText(Config.AUDIO_BITRATE)  # Устанавливаем текущее значение из Config
         self.comboBox_audio_quality.currentTextChanged.connect(
             self.update_audio_bitrate)  # connect - при выборе другого битрейта
         self.pushButton.clicked.connect(self.add_files)  # connect - для добавления файлов
-        self.listWidget.itemSelectionChanged.connect(self.display_metadata)  # При выборе/выделении файла
+        self.newListWidget.itemSelectionChanged.connect(self.display_metadata)  # При выборе/выделении файла
         self.pushButton_2.clicked.connect(self.remove_selected_files)  # connect - для удаления выделенных файлов
         self.pushButton_upload_cover.clicked.connect(self.upload_cover)  # connect - для загрузки обложки пользователя
         self.pushButton_convert.clicked.connect(self.start_conversion)  # connect - для конвертации
         self.pushButton_stop_and_clean.clicked.connect(self.cleann_all)  # connect - для очистки всего
         self.pushButton_openDir.clicked.connect(self.open_folder_with_file)
-        self.replacing_widget()
+
 
     def replacing_widget(self):
         # Удаляем старый listWidget из компоновки
@@ -130,11 +131,12 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
     def cleann_all(self):
         self.newListWidget.clear()
         self.timer.reset_timer()
+        self.metadata_manager.clear_metadata(*self.get_metadata_widgets())
 
     def display_metadata(self):
         selected_items = self.newListWidget.selectedItems()
         if not selected_items:
-            self.metadata_manager.clear_metadata(*self.get_metadata_widgets())
+            # self.metadata_manager.clear_metadata(*self.get_metadata_widgets())
             return
 
         file_path = selected_items[0].text()
