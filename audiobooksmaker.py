@@ -12,7 +12,7 @@ from core import MetadataManager, ConverterSignals, Converter, \
     M4BMerger  # Подключаем MetadataManager из core/metadata.py
 from data import Config  # Подключаем Config из data/config
 from data import FileManager  # Подключаем FileManager из data/file_manager
-from gui import Ui_MainWindow  # Подключаем класс MainWindow из gui.py
+from gui import Ui_MainWindow, CustomListWidget  # Подключаем класс MainWindow из gui.py
 from utils import Timer
 
 
@@ -43,8 +43,18 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.pushButton_convert.clicked.connect(self.start_conversion)  # connect - для конвертации
         self.pushButton_stop_and_clean.clicked.connect(self.cleann_all)  # connect - для очистки всего
         self.pushButton_openDir.clicked.connect(self.open_folder_with_file)
-        # self.listWidget.setAcceptDrops(True)
-        # self.listWidget.dropEvent = self.dropEvent
+        self.replacing_widget()
+
+    def replacing_widget(self):
+        # Удаляем старый listWidget из компоновки
+        self.verticalLayout.removeWidget(self.listWidget)
+        self.listWidget.deleteLater()  # Удаляем стандартный listWidget
+
+        # Создаем кастомный CustomListWidget
+        self.newListWidget = CustomListWidget(self.groupBox_files)
+
+        # Добавляем новый виджет в компоновку на место старого
+        self.verticalLayout.addWidget(self.newListWidget)
 
     def init_convertermanager(self):
         self.thread_pool = QThreadPool()
@@ -56,26 +66,26 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.audibook_converter_signals.progress_bar_signal.connect(self.update_progress)  # ???????????
         # self.stop_flag = False  # флага останова нет
 
-    def dropEvent(self, event):
-        print('dropEvent')
-        # Получаем список файлов из события
-        for url in event.mimeData().urls():
-            file_path = url.toLocalFile()
-            if os.path.isfile(file_path) and file_path.lower().endswith('.mp3'):
-                # Добавляем файл в QListWidget
-                self.listWidget.addItem(os.path.basename(file_path))
-            elif os.path.isdir(file_path):
-                # Если это папка, добавляем все mp3 файлы из нее
-                for root, _, files in os.walk(file_path):
-                    for file in files:
-                        if file.lower().endswith('.mp3'):
-                            self.listWidget.addItem(file)
+    # def dropEvent(self, event):
+    #     print('dropEvent')
+    #     # Получаем список файлов из события
+    #     for url in event.mimeData().urls():
+    #         file_path = url.toLocalFile()
+    #         if os.path.isfile(file_path) and file_path.lower().endswith('.mp3'):
+    #             # Добавляем файл в QListWidget
+    #             self.listWidget.addItem(os.path.basename(file_path))
+    #         elif os.path.isdir(file_path):
+    #             # Если это папка, добавляем все mp3 файлы из нее
+    #             for root, _, files in os.walk(file_path):
+    #                 for file in files:
+    #                     if file.lower().endswith('.mp3'):
+    #                         self.listWidget.addItem(file)
 
     def get_files(self):
         print('get_files')
         file_paths = []
-        for i in range(self.listWidget.count()):
-            item = self.listWidget.item(i)
+        for i in range(self.newListWidget.count()):
+            item = self.newListWidget.item(i)
             file_path = item.text()
             file_paths.append(file_path)
         return file_paths
@@ -110,18 +120,19 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         Config.set_audio_bitrate(bitrate)
 
     def add_files(self):
-        self.file_manager.add_files(self.listWidget)
+        # self.file_manager.add_files(self.listWidget) # self.newListWidget
+        self.file_manager.add_files(self.newListWidget)
 
     def remove_selected_files(self):
-        if self.file_manager.remove_files(self.listWidget):
+        if self.file_manager.remove_files(self.newListWidget):
             self.metadata_manager.clear_metadata(*self.get_metadata_widgets())
 
     def cleann_all(self):
-        self.listWidget.clear()
+        self.newListWidget.clear()
         self.timer.reset_timer()
 
     def display_metadata(self):
-        selected_items = self.listWidget.selectedItems()
+        selected_items = self.newListWidget.selectedItems()
         if not selected_items:
             self.metadata_manager.clear_metadata(*self.get_metadata_widgets())
             return
