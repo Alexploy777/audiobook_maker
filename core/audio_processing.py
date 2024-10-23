@@ -103,8 +103,17 @@ class Converter(QRunnable):
         try:
             audio = AudioSegment.from_mp3(input_path)
             output_buffer = tempfile.NamedTemporaryFile(suffix='.m4b', delete=False)  # Создаем временный файл
-            audio.export(output_buffer.name, format="mp4", codec="aac", bitrate=self.bitrate)
-            output_buffer.close()  # Явно закрываем временный файл
+
+            # audio.export(output_buffer.name, format="mp4", codec="aac", bitrate=self.bitrate)
+            # output_buffer.close()  # Явно закрываем временный файл
+
+            # Явно вызываем ffmpeg с подавлением вывода через subprocess
+            ffmpeg_command = [
+                'ffmpeg', '-i', input_path, '-c:a', 'aac', '-b:a', self.bitrate, output_buffer.name
+            ]
+            subprocess.run(ffmpeg_command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                           creationflags=subprocess.CREATE_NO_WINDOW)
+
             print(f"Файл успешно конвертирован: {input_path}")
             return output_buffer
 
