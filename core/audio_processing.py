@@ -142,18 +142,8 @@ class M4BMerger(QRunnable):
         self.my_signals.all_files_merged.emit()
 
 
-from PyQt5.QtCore import QRunnable, pyqtSlot
-import subprocess
-import os
-import tempfile
-
-from PyQt5.QtCore import QRunnable, pyqtSlot
-import subprocess
-import os
-import tempfile
-
-
 class Converter(QRunnable):
+    # class Converter:
     def __init__(self, index, quantity, file, output_temp_files_list, bitrate):
         super().__init__()
         self.index = index
@@ -167,82 +157,26 @@ class Converter(QRunnable):
     def run(self):
         """Запускает выполнение задания."""
         output_file = self.convert_mp3_to_m4b(self.file)
-        if output_file:
-            self.output_temp_files_list[self.index] = output_file
-            self.my_signals.progress_bar_signal.emit(self.index)  # Отправляем сигнал о завершении задания
-            self.my_signals.label_info_signal.emit(f'Сконвертирован файл:')
-            self.my_signals.label_info_signal_2.emit(f'{os.path.abspath(self.file)}')
+
+        self.output_temp_files_list[self.index] = output_file
+        self.my_signals.progress_bar_signal.emit(self.index)  # Отправляем сигнал о завершении задания
+        self.my_signals.label_info_signal.emit(f'сконвертирован файл:')
+        self.my_signals.label_info_signal_2.emit(f'{os.path.abspath(self.file)}')
 
     def convert_mp3_to_m4b(self, input_path):
         try:
-            # Создаем временный файл для m4b
-            output_buffer = tempfile.NamedTemporaryFile(suffix='.m4b', delete=False)
+            os.environ['FFMPEG_LOG_LEVEL'] = 'quiet'
+            audio = AudioSegment.from_mp3(input_path)
+            output_buffer = tempfile.NamedTemporaryFile(suffix='.m4b', delete=False)  # Создаем временный файл
 
-            # Команда для вызова ffmpeg через subprocess
-            ffmpeg_command = [
-                'ffmpeg', '-i', input_path, '-c:a', 'aac', '-b:a', self.bitrate, output_buffer.name
-            ]
-
-            # Лог для отслеживания команды
-            print(f"Запуск команды: {' '.join(ffmpeg_command)}")
-
-            # Используем Popen для асинхронного запуска процесса
-            process = subprocess.Popen(ffmpeg_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                       creationflags=subprocess.CREATE_NO_WINDOW)
-
-            # Ожидание завершения процесса
-            stdout, stderr = process.communicate()
-
-            # Лог выводов процесса
-            print(f"STDOUT: {stdout.decode()}")
-            print(f"STDERR: {stderr.decode()}")
-
-            if process.returncode == 0:
-                print(f"Файл успешно конвертирован: {input_path}")
-                return output_buffer.name  # Возвращаем путь к времянке
-            else:
-                print(f"Ошибка при конвертации файла: {stderr.decode()}")
-                return None
+            audio.export(output_buffer.name, format="mp4", codec="aac", bitrate=self.bitrate)
+            output_buffer.close()  # Явно закрываем временный файл
+            print(f"Файл успешно конвертирован: {input_path}")
+            return output_buffer
 
         except Exception as e:
             print(f"Ошибка при конвертации файла {input_path}: {e}")
             return None
-
-
-# class Converter(QRunnable):
-#     def __init__(self, index, quantity, file, output_temp_files_list, bitrate):
-#         super().__init__()
-#         self.index = index
-#         self.quantity = quantity
-#         self.my_signals = ConverterSignals()
-#         self.file = file
-#         self.output_temp_files_list = output_temp_files_list
-#         self.bitrate = bitrate
-#
-#     @pyqtSlot()
-#     def run(self):
-#         """Запускает выполнение задания."""
-#         output_file = self.convert_mp3_to_m4b(self.file)
-#
-#         self.output_temp_files_list[self.index] = output_file
-#         self.my_signals.progress_bar_signal.emit(self.index)  # Отправляем сигнал о завершении задания
-#         self.my_signals.label_info_signal.emit(f'сконвертирован файл:')
-#         self.my_signals.label_info_signal_2.emit(f'{os.path.abspath(self.file)}')
-#
-#     def convert_mp3_to_m4b(self, input_path):
-#         try:
-#             os.environ['FFMPEG_LOG_LEVEL'] = 'quiet'
-#             audio = AudioSegment.from_mp3(input_path)
-#             output_buffer = tempfile.NamedTemporaryFile(suffix='.m4b', delete=False)  # Создаем временный файл
-#
-#             audio.export(output_buffer.name, format="mp4", codec="aac", bitrate=self.bitrate)
-#             output_buffer.close()  # Явно закрываем временный файл
-#             print(f"Файл успешно конвертирован: {input_path}")
-#             return output_buffer
-#
-#         except Exception as e:
-#             print(f"Ошибка при конвертации файла {input_path}: {e}")
-#             return None
 
 
 if __name__ == '__main__':

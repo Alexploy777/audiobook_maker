@@ -187,7 +187,10 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
                 some_task.my_signals.progress_bar_signal.connect(self.update_progress)
                 some_task.my_signals.label_info_signal.connect(self.update_label)
                 some_task.my_signals.label_info_signal_2.connect(self.update_label_2)
+
+                # some_task.run()
                 self.thread_pool.start(some_task)
+
             print('Все задачи запущены')
 
     def update_label(self, value):
@@ -223,7 +226,7 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         # self.timer.stop_timer()
         # self.update_label('  ОСТАНОВКА!  ')
         # print('  ОСТАНОВКА!  ')
-        #
+        # #
         # return
 
         m4bmerger = M4BMerger(self.temp_files_list, self.output_path, self.metadata)
