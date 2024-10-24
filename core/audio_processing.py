@@ -142,6 +142,11 @@ class M4BMerger(QRunnable):
         self.my_signals.all_files_merged.emit()
 
 
+from PyQt5.QtCore import QRunnable, pyqtSlot
+import subprocess
+import os
+import tempfile
+
 class Converter(QRunnable):
     def __init__(self, index, quantity, file, output_temp_files_list, bitrate):
         super().__init__()
@@ -156,26 +161,68 @@ class Converter(QRunnable):
     def run(self):
         """Запускает выполнение задания."""
         output_file = self.convert_mp3_to_m4b(self.file)
-
-        self.output_temp_files_list[self.index] = output_file
-        self.my_signals.progress_bar_signal.emit(self.index)  # Отправляем сигнал о завершении задания
-        self.my_signals.label_info_signal.emit(f'сконвертирован файл:')
-        self.my_signals.label_info_signal_2.emit(f'{os.path.abspath(self.file)}')
+        if output_file:
+            self.output_temp_files_list[self.index] = output_file
+            self.my_signals.progress_bar_signal.emit(self.index)  # Отправляем сигнал о завершении задания
+            self.my_signals.label_info_signal.emit(f'Сконвертирован файл:')
+            self.my_signals.label_info_signal_2.emit(f'{os.path.abspath(self.file)}')
 
     def convert_mp3_to_m4b(self, input_path):
         try:
-            os.environ['FFMPEG_LOG_LEVEL'] = 'quiet'
-            audio = AudioSegment.from_mp3(input_path)
-            output_buffer = tempfile.NamedTemporaryFile(suffix='.m4b', delete=False)  # Создаем временный файл
+            # Создаем временный файл для m4b
+            output_buffer = tempfile.NamedTemporaryFile(suffix='.m4b', delete=False)
 
-            audio.export(output_buffer.name, format="mp4", codec="aac", bitrate=self.bitrate)
-            output_buffer.close()  # Явно закрываем временный файл
+            # Команда для вызова ffmpeg через subprocess
+            ffmpeg_command = [
+                'ffmpeg', '-i', input_path, '-c:a', 'aac', '-b:a', self.bitrate, output_buffer.name
+            ]
+
+            # Запускаем процесс с подавлением вывода консоли и окон
+            subprocess.run(ffmpeg_command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                           creationflags=subprocess.CREATE_NO_WINDOW)
+
             print(f"Файл успешно конвертирован: {input_path}")
-            return output_buffer
+            return output_buffer.name  # Возвращаем путь к времянке
 
         except Exception as e:
             print(f"Ошибка при конвертации файла {input_path}: {e}")
             return None
+
+
+# class Converter(QRunnable):
+#     def __init__(self, index, quantity, file, output_temp_files_list, bitrate):
+#         super().__init__()
+#         self.index = index
+#         self.quantity = quantity
+#         self.my_signals = ConverterSignals()
+#         self.file = file
+#         self.output_temp_files_list = output_temp_files_list
+#         self.bitrate = bitrate
+#
+#     @pyqtSlot()
+#     def run(self):
+#         """Запускает выполнение задания."""
+#         output_file = self.convert_mp3_to_m4b(self.file)
+#
+#         self.output_temp_files_list[self.index] = output_file
+#         self.my_signals.progress_bar_signal.emit(self.index)  # Отправляем сигнал о завершении задания
+#         self.my_signals.label_info_signal.emit(f'сконвертирован файл:')
+#         self.my_signals.label_info_signal_2.emit(f'{os.path.abspath(self.file)}')
+#
+#     def convert_mp3_to_m4b(self, input_path):
+#         try:
+#             os.environ['FFMPEG_LOG_LEVEL'] = 'quiet'
+#             audio = AudioSegment.from_mp3(input_path)
+#             output_buffer = tempfile.NamedTemporaryFile(suffix='.m4b', delete=False)  # Создаем временный файл
+#
+#             audio.export(output_buffer.name, format="mp4", codec="aac", bitrate=self.bitrate)
+#             output_buffer.close()  # Явно закрываем временный файл
+#             print(f"Файл успешно конвертирован: {input_path}")
+#             return output_buffer
+#
+#         except Exception as e:
+#             print(f"Ошибка при конвертации файла {input_path}: {e}")
+#             return None
 
 
 if __name__ == '__main__':
