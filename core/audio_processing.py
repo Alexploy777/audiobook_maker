@@ -1,6 +1,9 @@
 import os
+import re
 import subprocess
+import sys
 import tempfile
+import types
 
 from PyQt5.QtCore import QRunnable, pyqtSignal, QObject, pyqtSlot
 from mutagen.mp4 import MP4Cover, MP4
@@ -153,6 +156,7 @@ class Converter(QRunnable):
     def run(self):
         """Запускает выполнение задания."""
         output_file = self.convert_mp3_to_m4b(self.file)
+
         self.output_temp_files_list[self.index] = output_file
         self.my_signals.progress_bar_signal.emit(self.index)  # Отправляем сигнал о завершении задания
         self.my_signals.label_info_signal.emit(f'сконвертирован файл:')
