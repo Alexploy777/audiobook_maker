@@ -147,6 +147,12 @@ import subprocess
 import os
 import tempfile
 
+from PyQt5.QtCore import QRunnable, pyqtSlot
+import subprocess
+import os
+import tempfile
+
+
 class Converter(QRunnable):
     def __init__(self, index, quantity, file, output_temp_files_list, bitrate):
         super().__init__()
@@ -177,12 +183,26 @@ class Converter(QRunnable):
                 'ffmpeg', '-i', input_path, '-c:a', 'aac', '-b:a', self.bitrate, output_buffer.name
             ]
 
-            # Запускаем процесс с подавлением вывода консоли и окон
-            subprocess.run(ffmpeg_command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                           creationflags=subprocess.CREATE_NO_WINDOW)
+            # Лог для отслеживания команды
+            print(f"Запуск команды: {' '.join(ffmpeg_command)}")
 
-            print(f"Файл успешно конвертирован: {input_path}")
-            return output_buffer.name  # Возвращаем путь к времянке
+            # Используем Popen для асинхронного запуска процесса
+            process = subprocess.Popen(ffmpeg_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                       creationflags=subprocess.CREATE_NO_WINDOW)
+
+            # Ожидание завершения процесса
+            stdout, stderr = process.communicate()
+
+            # Лог выводов процесса
+            print(f"STDOUT: {stdout.decode()}")
+            print(f"STDERR: {stderr.decode()}")
+
+            if process.returncode == 0:
+                print(f"Файл успешно конвертирован: {input_path}")
+                return output_buffer.name  # Возвращаем путь к времянке
+            else:
+                print(f"Ошибка при конвертации файла: {stderr.decode()}")
+                return None
 
         except Exception as e:
             print(f"Ошибка при конвертации файла {input_path}: {e}")
