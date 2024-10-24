@@ -7,9 +7,8 @@ import types
 
 from PyQt5.QtCore import QRunnable, pyqtSignal, QObject, pyqtSlot
 from mutagen.mp4 import MP4Cover, MP4
-from pydub import AudioSegment
 
-os.environ['FFMPEG_LOG_LEVEL'] = 'quiet'
+from pydub import AudioSegment
 
 
 class ConverterSignals(QObject):
@@ -165,7 +164,6 @@ class Converter(QRunnable):
 
     def convert_mp3_to_m4b(self, input_path):
         try:
-            os.environ['FFMPEG_LOG_LEVEL'] = 'quiet'
             audio = AudioSegment.from_mp3(input_path)
             output_buffer = tempfile.NamedTemporaryFile(suffix='.m4b', delete=False)  # Создаем временный файл
 
