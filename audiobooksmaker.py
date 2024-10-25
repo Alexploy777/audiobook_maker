@@ -22,6 +22,7 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super(AudiobookCreator, self).__init__()
         self.setupUi(self)
+        config_instance = Config()
         Config.load_config()  # Загружаем конфигурацию при запуске приложения
         self.setWindowTitle(Config.WINDOWTITLE)
         self.allowed_extensions = tuple(Config.ALLOWED_EXTENSIONS)

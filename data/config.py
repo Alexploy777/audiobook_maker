@@ -1,6 +1,7 @@
 # data/config.py
 import json
 import os
+from typing import Optional
 
 
 class Config:
@@ -21,6 +22,21 @@ class Config:
     DEFAULT_TITLE = "Untitled"
     FFMPEG_LOG_LEVEL = "info"
 
+    # # Хранить оригинальные значения атрибутов
+    # original_attributes = {}
+
+    # def __new__(cls, *args, **kwargs):
+    #     # Сохраняем оригинальные значения атрибутов при первой инициации
+    #     cls.save_original_values()
+    #     print(cls.original_attributes)  # Выводим оригинальные значения
+    #     # return super(Config, cls).__new__(cls)
+
+    # @classmethod
+    # def save_original_values(cls):
+    #     cls.original_attributes = {key: getattr(cls, key) for key in dir(cls) if
+    #                                not key.startswith("__") and not callable(getattr(cls, key))}
+
+
     @classmethod
     def load_config(cls):
         if os.path.exists(cls.CONFIG_FILE):
@@ -40,3 +56,8 @@ class Config:
         config_data = {key: getattr(cls, key) for key in dir(cls) if not key.startswith("__") and not callable(getattr(cls, key))}
         with open(cls.CONFIG_FILE, 'w') as f:
             json.dump(config_data, f, indent=4)
+
+    # @classmethod
+    # def reset_to_original_values(cls):
+    #     for key, value in cls.original_attributes.items():
+    #         setattr(cls, key, value)
