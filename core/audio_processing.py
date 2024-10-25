@@ -1,18 +1,14 @@
 import os
-import re
 import subprocess
-import sys
 import tempfile
-import types
 
 from PyQt5.QtCore import QRunnable, pyqtSignal, QObject, pyqtSlot
 from mutagen.mp4 import MP4Cover, MP4
 
-startupinfo = subprocess.STARTUPINFO()
-startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-startupinfo.wShowWindow = subprocess.SW_HIDE
 
-from pydub import AudioSegment
+# startupinfo = subprocess.STARTUPINFO()
+# startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+# startupinfo.wShowWindow = subprocess.SW_HIDE
 
 
 class ConverterSignals(QObject):

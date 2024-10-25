@@ -2,10 +2,9 @@
 import os
 import subprocess
 import sys
-from time import sleep
 
 os.environ['PATH'] += os.pathsep + os.path.abspath('external')
-os.environ['FFMPEG_LOG_LEVEL'] = 'quiet'
+# os.environ['FFMPEG_LOG_LEVEL'] = 'quiet'
 
 from PyQt5.QtCore import QThreadPool, QTimer, QTime, Qt
 from PyQt5.QtWidgets import QMainWindow, QApplication, QMessageBox  # Импортируем класс QMainWindow и QApplication
