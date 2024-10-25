@@ -25,18 +25,20 @@ class Timer:
         self.time = QTime(0, 0, 0)
         self.lcdNumber.display(self.time.toString("mm.ss"))  # Обновляем отображение на 00:00
 
-# import platform
-# import subprocess
-#
-# def run_ffmpeg_command(command):
-#     system_type = platform.system()
-#     if system_type == 'Windows':
-#         startupinfo = subprocess.STARTUPINFO()
-#         startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-#         startupinfo.wShowWindow = subprocess.SW_HIDE
-#         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, startupinfo=startupinfo)
-#     else:
-#         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-#
-#     stdout, stderr = process.communicate()
-#     return stdout, stderr
+
+import platform
+import subprocess
+
+
+def run_ffmpeg_command(command):
+    system_type = platform.system()
+    if system_type == 'Windows':
+        startupinfo = subprocess.STARTUPINFO()
+        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        startupinfo.wShowWindow = subprocess.SW_HIDE
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, startupinfo=startupinfo)
+    else:
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    stdout, stderr = process.communicate()
+    return stdout, stderr

@@ -8,6 +8,10 @@ import types
 from PyQt5.QtCore import QRunnable, pyqtSignal, QObject, pyqtSlot
 from mutagen.mp4 import MP4Cover, MP4
 
+startupinfo = subprocess.STARTUPINFO()
+startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+startupinfo.wShowWindow = subprocess.SW_HIDE
+
 from pydub import AudioSegment
 
 
@@ -26,6 +30,10 @@ class M4BMerger(QRunnable):
         self.output_file = output_file  # Финальный выходной файл
         self.metadata = metadata
         self.my_signals = ConverterSignals()
+
+        # startupinfo = subprocess.STARTUPINFO()
+        # startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        # startupinfo.wShowWindow = subprocess.SW_HIDE
 
     def merge_files(self):
         """Объединяем m4b файлы с помощью ffmpeg, используя временный список файлов и добавляем главы."""
@@ -52,7 +60,7 @@ class M4BMerger(QRunnable):
                             file_data
                         ]
                         result = subprocess.run(duration_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                                creationflags=subprocess.CREATE_NO_WINDOW)
+                                                startupinfo=startupinfo)
                         duration = float(result.stdout.strip())
 
                         # Пишем главу в метаданные
@@ -78,7 +86,7 @@ class M4BMerger(QRunnable):
             ]
 
             subprocess.run(ffmpeg_command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                           creationflags=subprocess.CREATE_NO_WINDOW)
+                           startupinfo=startupinfo)
             print(f'Файлы успешно объединены в {self.output_file} с добавлением глав')
 
         except subprocess.CalledProcessError as e:
