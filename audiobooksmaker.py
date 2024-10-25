@@ -47,16 +47,8 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.pushButton_stop_and_clean.clicked.connect(self.cleann_all)  # connect - для очистки всего
         self.pushButton_openDir.clicked.connect(self.open_folder_with_file)
 
-    def replacing_widget(self):
-        # Удаляем старый listWidget из компоновки
-        self.verticalLayout.removeWidget(self.listWidget)
-        self.listWidget.deleteLater()  # Удаляем стандартный listWidget
-        self.newListWidget = CustomListWidget(self.allowed_extensions,
-                                              parent=self.groupBox_files)  # Создаем кастомный CustomListWidget
-        self.verticalLayout.addWidget(self.newListWidget)  # Добавляем новый виджет в компоновку на место старого
-        self.newListWidget.setToolTip('Добавь файлы для создания аудиокниги')
-
     def init_convertermanager(self):
+        os.environ['PATH'] += os.pathsep + os.path.abspath(Config.FFMPEG_PATH)
         self.thread_pool = QThreadPool()
         self.audibook_converter_signals = ConverterSignals()
         self.audibook_converter_signals.label_info_signal.connect(
@@ -65,7 +57,16 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
             self.update_label_2)  # Подключаем вывод сообщений в label 2 интерфейса
         self.audibook_converter_signals.all_tasks_completed.connect(
             self.on_all_tasks_completed)  # Подключаем сигнал завершения всех задач
-        self.audibook_converter_signals.progress_bar_signal.connect(self.update_progress)  # ???????????
+        self.audibook_converter_signals.progress_bar_signal.connect(self.update_progress)
+
+    def replacing_widget(self):
+        # Удаляем старый listWidget из компоновки
+        self.verticalLayout.removeWidget(self.listWidget)
+        self.listWidget.deleteLater()  # Удаляем стандартный listWidget
+        self.newListWidget = CustomListWidget(self.allowed_extensions,
+                                              parent=self.groupBox_files)  # Создаем кастомный CustomListWidget
+        self.verticalLayout.addWidget(self.newListWidget)  # Добавляем новый виджет в компоновку на место старого
+        self.newListWidget.setToolTip('Добавь файлы для создания аудиокниги')
 
     def get_files(self):
         print('get_files')

@@ -55,8 +55,10 @@ class M4BMerger(QRunnable):
                             '-of', 'default=noprint_wrappers=1:nokey=1',
                             file_data
                         ]
+                        # result = subprocess.run(duration_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                        #                         startupinfo=startupinfo)
                         result = subprocess.run(duration_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                                startupinfo=startupinfo)
+                                                creationflags=subprocess.CREATE_NO_WINDOW)
                         duration = float(result.stdout.strip())
 
                         # Пишем главу в метаданные
@@ -81,8 +83,10 @@ class M4BMerger(QRunnable):
                 self.output_file  # выходной файл
             ]
 
+            # subprocess.run(ffmpeg_command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            #                startupinfo=startupinfo)
             subprocess.run(ffmpeg_command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                           startupinfo=startupinfo)
+                           creationflags=subprocess.CREATE_NO_WINDOW)
             print(f'Файлы успешно объединены в {self.output_file} с добавлением глав')
 
         except subprocess.CalledProcessError as e:
