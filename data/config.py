@@ -4,10 +4,10 @@ import os
 
 
 class Config:
-    WINDOWTITLE = 'Audiobook Makerrrrrr'
-    AUDIO_BITRATE = "64k"
-    AUDIO_BITRATE_CHOICES = ['8', '16', '24', '32', '40', '48', '56', '64', '80', '96', '112', '128', '144', '160',
-                             '192', '224', '256', '320']
+    WINDOWTITLE = 'Audiobook Maker'
+    AUDIO_BITRATE = "128k"
+    AUDIO_BITRATE_CHOICES = ['64k', '96k', '128k', '144k', '160k',
+                             '192k', '256k', '320k']
     AUDIO_CODEC = "aac"
     OUTPUT_FORMAT = "m4b"
     CHAPTER_MARKS = True
