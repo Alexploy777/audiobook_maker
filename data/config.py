@@ -8,20 +8,18 @@ class Config:
     AUDIO_BITRATE = "128k"
     AUDIO_BITRATE_CHOICES = ['64k', '96k', '128k', '144k', '160k',
                              '192k', '256k', '320k']
+    FFMPEG_PATH = "external"
+    CONFIG_FILE = "config.json"
+    ALLOWED_EXTENSIONS = ('.mp3')
     AUDIO_CODEC = "aac"
     OUTPUT_FORMAT = "m4b"
     CHAPTER_MARKS = True
     COVER_IMAGE_FORMAT = "jpg"
-    TEMP_DIR = "/tmp/audiobook_maker"
     DELETE_TEMP_FILES = True
-    MAX_THREADS = 4
     DEFAULT_GENRE = "Audiobook"
     DEFAULT_AUTHOR = "Unknown"
     DEFAULT_TITLE = "Untitled"
-    FFMPEG_PATH = "external"
     FFMPEG_LOG_LEVEL = "info"
-    CONFIG_FILE = "config.json"
-    ALLOWED_EXTENSIONS = ('.mp3')
 
     @classmethod
     def load_config(cls):

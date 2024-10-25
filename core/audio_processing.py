@@ -5,6 +5,8 @@ import tempfile
 from PyQt5.QtCore import QRunnable, pyqtSignal, QObject, pyqtSlot
 from mutagen.mp4 import MP4Cover, MP4
 
+from data import Config
+
 
 # startupinfo = subprocess.STARTUPINFO()
 # startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
@@ -162,6 +164,11 @@ class Converter(QRunnable):
         self.output_temp_files_list = output_temp_files_list
         self.bitrate = bitrate
 
+        self.audio_codec = Config.AUDIO_CODEC
+        self.output_format = '.' + Config.OUTPUT_FORMAT
+
+
+
     @pyqtSlot()
     def run(self):
         """Запускает выполнение задания."""
@@ -180,13 +187,13 @@ class Converter(QRunnable):
                 return None
 
             # Создаём временный файл
-            output_buffer = tempfile.NamedTemporaryFile(suffix='.m4b', delete=False)
+            output_buffer = tempfile.NamedTemporaryFile(suffix=self.output_format, delete=False)
             output_buffer.close()  # Закрываем, чтобы FFmpeg мог записать в него
 
             # Команда для FFmpeg ffmpeg -i input.mp3 -vn -c:a aac output.m4b
             print(self.bitrate)
             command = [
-                'ffmpeg', '-i', input_path, '-vn', '-c:a', 'aac', '-b:a', self.bitrate, '-y',
+                'ffmpeg', '-i', input_path, '-vn', '-c:a', self.audio_codec, '-b:a', self.bitrate, '-y',
                 # -y: перезаписываем файл, если существует
                 output_buffer.name
             ]
