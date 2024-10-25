@@ -33,99 +33,99 @@ class M4BMerger(QRunnable):
         # startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
         # startupinfo.wShowWindow = subprocess.SW_HIDE
 
+    #     def merge_files(self):
+    #         """Объединяем m4b файлы с помощью ffmpeg, используя временный список файлов и добавляем главы."""
+    #         self.my_signals.label_info_signal.emit('Начинаю объединять файлы')
+    #         self.my_signals.progress_bar_signal.emit(30)
+    #         try:
+    #             # Шаг 1: Создаем временный файл для списка файлов
+    #             with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_file:
+    #                 for file_data in self.input_files:
+    #                     if file_data:
+    #                         temp_file.write(f"file '{file_data}'\n")
+    #
+    #             # Шаг 2: Создаем временный файл для метаданных глав
+    #             with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as chapters_file:
+    #                 start_time = 0.0  # Время начала каждой главы
+    #                 for index, file_data in enumerate(self.input_files):
+    #                     if file_data:
+    #                         # Получаем продолжительность каждого файла
+    #                         duration_command = [
+    #                             'ffprobe',
+    #                             '-v', 'error',
+    #                             '-show_entries', 'format=duration',
+    #                             '-of', 'default=noprint_wrappers=1:nokey=1',
+    #                             file_data
+    #                         ]
+    #                         # result = subprocess.run(duration_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+    #                         #                         startupinfo=startupinfo)
+    #                         result = subprocess.run(duration_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+    #                                                 creationflags=subprocess.CREATE_NO_WINDOW)
+    #                         duration = float(result.stdout.strip())
+    #
+    #                         # Пишем главу в метаданные
+    #                         chapters_file.write(f"[CHAPTER]\n")
+    #                         chapters_file.write(f"TIMEBASE=1/1\n")
+    #                         chapters_file.write(f"START={int(start_time)}\n")
+    #                         chapters_file.write(f"END={int(start_time + duration)}\n")
+    #                         chapters_file.write(f"title=Chapter {index + 1}\n")
+    #
+    #                         start_time += duration  # Обновляем время начала следующей главы
+    #
+    #             # Шаг 3: Объединяем файлы и добавляем главы через метаданные
+    #             ffmpeg_command = [
+    #                 'ffmpeg',
+    #                 '-f', 'concat',  # формат ввода: список файлов
+    #                 '-safe', '0',  # разрешаем использовать небезопасные символы в путях
+    #                 '-i', temp_file.name,  # ввод через временный файл списка
+    #                 '-i', chapters_file.name,  # ввод метаданных глав
+    #                 '-map_metadata', '1',  # используем метаданные из второго файла (главы)
+    #                 '-c', 'copy',  # копируем содержимое без перекодирования
+    #                 '-y',  # перезаписываем выходной файл без предупреждения
+    #                 self.output_file  # выходной файл
+    #             ]
+    #
+    #             # subprocess.run(ffmpeg_command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+    #             #                startupinfo=startupinfo)
+    #             subprocess.run(ffmpeg_command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+    #                            creationflags=subprocess.CREATE_NO_WINDOW)
+    #             print(f'Файлы успешно объединены в {self.output_file} с добавлением глав')
+    #
+    #         except subprocess.CalledProcessError as e:
+    #             print(f'Ошибка при объединении файлов: {e}')
+    #         finally:
+    #             # Удаляем временные файлы после завершения работы
+    #             os.remove(temp_file.name)
+    #             os.remove(chapters_file.name)
+    #             self.my_signals.label_info_signal.emit('Файлы объединены')
+
     def merge_files(self):
-        """Объединяем m4b файлы с помощью ffmpeg, используя временный список файлов и добавляем главы."""
+        """Объединяем m4b файлы с помощью ffmpeg, используя временный список файлов."""
         self.my_signals.label_info_signal.emit('Начинаю объединять файлы')
         self.my_signals.progress_bar_signal.emit(30)
         try:
-            # Шаг 1: Создаем временный файл для списка файлов
             with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_file:
                 for file_data in self.input_files:
                     if file_data:
+                        # temp_file.write(f"file '{file_data.name}'\n")
                         temp_file.write(f"file '{file_data}'\n")
-
-            # Шаг 2: Создаем временный файл для метаданных глав
-            with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as chapters_file:
-                start_time = 0.0  # Время начала каждой главы
-                for index, file_data in enumerate(self.input_files):
-                    if file_data:
-                        # Получаем продолжительность каждого файла
-                        duration_command = [
-                            'ffprobe',
-                            '-v', 'error',
-                            '-show_entries', 'format=duration',
-                            '-of', 'default=noprint_wrappers=1:nokey=1',
-                            file_data
-                        ]
-                        # result = subprocess.run(duration_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                        #                         startupinfo=startupinfo)
-                        result = subprocess.run(duration_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                                creationflags=subprocess.CREATE_NO_WINDOW)
-                        duration = float(result.stdout.strip())
-
-                        # Пишем главу в метаданные
-                        chapters_file.write(f"[CHAPTER]\n")
-                        chapters_file.write(f"TIMEBASE=1/1\n")
-                        chapters_file.write(f"START={int(start_time)}\n")
-                        chapters_file.write(f"END={int(start_time + duration)}\n")
-                        chapters_file.write(f"title=Chapter {index + 1}\n")
-
-                        start_time += duration  # Обновляем время начала следующей главы
-
-            # Шаг 3: Объединяем файлы и добавляем главы через метаданные
+            print(temp_file.name)
             ffmpeg_command = [
                 'ffmpeg',
                 '-f', 'concat',  # формат ввода: список файлов
                 '-safe', '0',  # разрешаем использовать небезопасные символы в путях
                 '-i', temp_file.name,  # ввод через временный файл списка
-                '-i', chapters_file.name,  # ввод метаданных глав
-                '-map_metadata', '1',  # используем метаданные из второго файла (главы)
                 '-c', 'copy',  # копируем содержимое без перекодирования
                 '-y',  # перезаписываем выходной файл без предупреждения
                 self.output_file  # выходной файл
             ]
 
-            # subprocess.run(ffmpeg_command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            #                startupinfo=startupinfo)
-            subprocess.run(ffmpeg_command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                           creationflags=subprocess.CREATE_NO_WINDOW)
-            print(f'Файлы успешно объединены в {self.output_file} с добавлением глав')
-
+            subprocess.run(ffmpeg_command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            print(f'Файлы успешно объединены в {self.output_file}')
         except subprocess.CalledProcessError as e:
             print(f'Ошибка при объединении файлов: {e}')
         finally:
-            # Удаляем временные файлы после завершения работы
-            os.remove(temp_file.name)
-            os.remove(chapters_file.name)
-            self.my_signals.label_info_signal.emit('Файлы объединены')
-
-    # def merge_files(self):
-    #     """Объединяем m4b файлы с помощью ffmpeg, используя временный список файлов."""
-    #     self.my_signals.label_info_signal.emit('Начинаю объединять файлы')
-    #     self.my_signals.progress_bar_signal.emit(30)
-    #     try:
-    #         with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_file:
-    #             for file_data in self.input_files:
-    #                 if file_data:
-    #                     # temp_file.write(f"file '{file_data.name}'\n")
-    #                     temp_file.write(f"file '{file_data}'\n")
-    #         print(temp_file.name)
-    #         ffmpeg_command = [
-    #             'ffmpeg',
-    #             '-f', 'concat',  # формат ввода: список файлов
-    #             '-safe', '0',  # разрешаем использовать небезопасные символы в путях
-    #             '-i', temp_file.name,  # ввод через временный файл списка
-    #             '-c', 'copy',  # копируем содержимое без перекодирования
-    #             '-y',  # перезаписываем выходной файл без предупреждения
-    #             self.output_file  # выходной файл
-    #         ]
-    #
-    #         subprocess.run(ffmpeg_command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    #         print(f'Файлы успешно объединены в {self.output_file}')
-    #     except subprocess.CalledProcessError as e:
-    #         print(f'Ошибка при объединении файлов: {e}')
-    #     finally:
-    #         os.remove(temp_file.name)  # Удаляем временный файл списка после завершения работы
+            os.remove(temp_file.name)  # Удаляем временный файл списка после завершения работы
 
     def add_cover_and_metadata(self, output_path, metadata):
         self.my_signals.label_info_signal.emit('Добавляю метаданные')

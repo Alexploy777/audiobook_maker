@@ -3,6 +3,8 @@ import os
 import subprocess
 import sys
 
+from utils.check_chapters import checkChapters
+
 os.environ['PATH'] += os.pathsep + os.path.abspath('external')
 # os.environ['FFMPEG_LOG_LEVEL'] = 'quiet'
 
@@ -249,6 +251,7 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.audibook_converter_signals.label_info_signal_2.emit(f'{self.output_path}')
         self.progressBar.setValue(100)
         self.timer.stop_timer()
+        checkChapters(self.output_path)
 
 
 if __name__ == '__main__':
