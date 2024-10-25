@@ -174,17 +174,54 @@ class Converter(QRunnable):
 
     def convert_mp3_to_m4b(self, input_path):
         try:
-            audio = AudioSegment.from_mp3(input_path)
-            output_buffer = tempfile.NamedTemporaryFile(suffix='.m4b', delete=False)  # Создаем временный файл
+            # Проверка, существует ли файл
+            if not os.path.isfile(input_path):
+                print(f"Файл не найден: {input_path}")
+                return None
 
-            audio.export(output_buffer.name, format="mp4", codec="aac", bitrate=self.bitrate)
-            output_buffer.close()  # Явно закрываем временный файл
+            # Создаём временный файл
+            output_buffer = tempfile.NamedTemporaryFile(suffix='.m4b', delete=False)
+            output_buffer.close()  # Закрываем, чтобы FFmpeg мог записать в него
+
+            # Команда для FFmpeg ffmpeg -i input.mp3 -vn -c:a aac output.m4b
+            command = [
+                'ffmpeg', '-i', input_path, '-vn', '-c:a', 'aac', '-y',  # -y: перезаписываем файл, если существует
+                output_buffer.name
+            ]
+            # Запускаем FFmpeg и выводим ошибки при необходимости
+            process = subprocess.run(
+                command,
+                creationflags=subprocess.CREATE_NO_WINDOW,
+                capture_output=True,
+                text=True,
+                encoding='utf-8',  # Добавляем utf-8 кодировку для безопасного чтения
+                errors='ignore'  # Игнорируем недопустимые символы, чтобы избежать UnicodeDecodeError
+            )
+
+            if process.returncode != 0:  # Проверяем успешность выполнения
+                print(f"Ошибка FFmpeg: {process.stderr}")
+                return None
+
             print(f"Файл успешно конвертирован: {input_path}")
             return output_buffer
 
         except Exception as e:
             print(f"Ошибка при конвертации файла {input_path}: {e}")
             return None
+
+    # def convert_mp3_to_m4b(self, input_path):
+    #     try:
+    #         audio = AudioSegment.from_mp3(input_path)
+    #         output_buffer = tempfile.NamedTemporaryFile(suffix='.m4b', delete=False)  # Создаем временный файл
+    #
+    #         audio.export(output_buffer.name, format="mp4", codec="aac", bitrate=self.bitrate)
+    #         output_buffer.close()  # Явно закрываем временный файл
+    #         print(f"Файл успешно конвертирован: {input_path}")
+    #         return output_buffer
+    #
+    #     except Exception as e:
+    #         print(f"Ошибка при конвертации файла {input_path}: {e}")
+    #         return None
 
 
 if __name__ == '__main__':

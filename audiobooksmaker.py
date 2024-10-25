@@ -218,7 +218,7 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
 
     def on_all_tasks_completed(self):
         """Вызывается при завершении всех задач."""
-        self.temp_files_list = [f.name for f in self.output_temp_files_list]
+        self.temp_files_list = [f.name for f in self.output_temp_files_list if f is not None]
         # print(temp_files_list)
         # QMessageBox.information(None, "Завершено", "Все задания выполнены!")
         self.audibook_converter_signals.label_info_signal.emit('Все файлы успешно конвертированы!')
