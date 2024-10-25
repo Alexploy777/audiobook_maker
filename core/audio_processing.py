@@ -184,8 +184,10 @@ class Converter(QRunnable):
             output_buffer.close()  # Закрываем, чтобы FFmpeg мог записать в него
 
             # Команда для FFmpeg ffmpeg -i input.mp3 -vn -c:a aac output.m4b
+            print(self.bitrate)
             command = [
-                'ffmpeg', '-i', input_path, '-vn', '-c:a', 'aac', '-y',  # -y: перезаписываем файл, если существует
+                'ffmpeg', '-i', input_path, '-vn', '-c:a', 'aac', '-b:a', self.bitrate, '-y',
+                # -y: перезаписываем файл, если существует
                 output_buffer.name
             ]
             # Запускаем FFmpeg и выводим ошибки при необходимости
