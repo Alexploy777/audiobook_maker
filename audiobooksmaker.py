@@ -226,11 +226,11 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         # QMessageBox.information(None, "Завершено", "Все задания выполнены!")
         self.audibook_converter_signals.label_info_signal.emit('Все файлы успешно конвертированы!')
 
-        self.timer.stop_timer()
-        self.update_label('  ОСТАНОВКА!  ')
-        print('  ОСТАНОВКА!  ')
-        #
-        return
+        # self.timer.stop_timer()
+        # self.update_label('  ОСТАНОВКА!  ')
+        # print('  ОСТАНОВКА!  ')
+        # #
+        # return
 
         m4bmerger = M4BMerger(self.temp_files_list, self.output_path, self.metadata)
         m4bmerger.my_signals.all_files_merged.connect(self.end_of_merge)

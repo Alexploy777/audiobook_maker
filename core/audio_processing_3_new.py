@@ -30,6 +30,20 @@ class M4BMerger(QRunnable):
         self.output_file = output_file  # Финальный выходной файл
         self.metadata = metadata
         self.my_signals = ConverterSignals()
+        self.durations = self.get_durations()
+
+    def get_durations(self):
+        durations = []
+        for file in self.input_files:
+            result = subprocess.run(
+                ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of",
+                 "default=noprint_wrappers=1:nokey=1", file],
+                capture_output=True, text=True
+            )
+            duration = float(result.stdout.strip())
+            durations.append(duration)
+        return durations
+
 
     def merge_files(self):
         """Объединение m4b файлов с помощью ffmpeg через временный список файлов."""
@@ -58,47 +72,47 @@ class M4BMerger(QRunnable):
         finally:
             os.remove(temp_file.name)
 
-    def add_chapters(self):
-        """Добавляет главы с использованием временного файла и ffmpeg."""
-        self.my_signals.label_info_signal.emit('Добавляю главы')
-        self.my_signals.progress_bar_signal.emit(50)
-        try:
-            # Создаём временный файл для глав
-            with tempfile.NamedTemporaryFile(mode='w', suffix=".txt", delete=False) as chapter_file:
-                start_time = 0
-                for i, file in enumerate(self.input_files, start=1):
-                    ffprobe_command = [
-                        'ffprobe', '-v', 'error', '-show_entries',
-                        'format=duration', '-of', 'default=noprint_wrappers=1:nokey=1', file
-                    ]
-                    duration = float(subprocess.check_output(ffprobe_command).strip())
-                    end_time = start_time + duration
-                    chapter_file.write(
-                        f"[CHAPTER]\nTIMEBASE=1/1000\nSTART={int(start_time * 1000)}\nEND={int(end_time * 1000)}\ntitle=Chapter {i}\n")
-                    start_time = end_time
-
-            # Временный выходной файл
-            temp_output_file = tempfile.NamedTemporaryFile(delete=False, suffix=".m4b").name
-            # temp_output_file = "D:/CODING/audiobook_maker/mp3/главы_with_chapters.m4b"
-
-            print(chapter_file.name)
-
-            # Команда ffmpeg для добавления метаданных глав в новый файл
-            ffmpeg_command = [
-                'ffmpeg', '-i', self.output_file, '-i', chapter_file.name,
-                '-map_metadata', '1', '-codec', 'copy', '-y', temp_output_file
-            ]
-
-            subprocess.run(ffmpeg_command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            print("Главы успешно добавлены. Перезаписываем оригинальный файл.")
-
-            # Замена оригинального файла новым с главами
-            shutil.move(temp_output_file, self.output_file)
-
-        except subprocess.CalledProcessError as e:
-            print(f'Ошибка при добавлении глав: {e.stderr.decode()}')
-        # finally:
-        #     os.remove(chapter_file.name)
+    # def add_chapters(self):
+    #     """Добавляет главы с использованием временного файла и ffmpeg."""
+    #     self.my_signals.label_info_signal.emit('Добавляю главы')
+    #     self.my_signals.progress_bar_signal.emit(50)
+    #     try:
+    #         # Создаём временный файл для глав
+    #         with tempfile.NamedTemporaryFile(mode='w', suffix=".txt", delete=False) as chapter_file:
+    #             start_time = 0
+    #             for i, file in enumerate(self.input_files, start=1):
+    #                 ffprobe_command = [
+    #                     'ffprobe', '-v', 'error', '-show_entries',
+    #                     'format=duration', '-of', 'default=noprint_wrappers=1:nokey=1', file
+    #                 ]
+    #                 duration = float(subprocess.check_output(ffprobe_command).strip())
+    #                 end_time = start_time + duration
+    #                 chapter_file.write(
+    #                     f"[CHAPTER]\nTIMEBASE=1/1000\nSTART={int(start_time * 1000)}\nEND={int(end_time * 1000)}\ntitle=Chapter {i}\n")
+    #                 start_time = end_time
+    #
+    #         # Временный выходной файл
+    #         temp_output_file = tempfile.NamedTemporaryFile(delete=False, suffix=".m4b").name
+    #         # temp_output_file = "D:/CODING/audiobook_maker/mp3/главы_with_chapters.m4b"
+    #
+    #         print(chapter_file.name)
+    #
+    #         # Команда ffmpeg для добавления метаданных глав в новый файл
+    #         ffmpeg_command = [
+    #             'ffmpeg', '-i', self.output_file, '-i', chapter_file.name,
+    #             '-map_metadata', '1', '-codec', 'copy', '-y', temp_output_file
+    #         ]
+    #
+    #         subprocess.run(ffmpeg_command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    #         print("Главы успешно добавлены. Перезаписываем оригинальный файл.")
+    #
+    #         # Замена оригинального файла новым с главами
+    #         shutil.move(temp_output_file, self.output_file)
+    #
+    #     except subprocess.CalledProcessError as e:
+    #         print(f'Ошибка при добавлении глав: {e.stderr.decode()}')
+    #     # finally:
+    #     #     os.remove(chapter_file.name)
 
     def add_cover_and_metadata(self):
         self.my_signals.label_info_signal.emit('Добавляю метаданные')
@@ -122,10 +136,51 @@ class M4BMerger(QRunnable):
     def run(self):
         """Основной метод для выполнения всех шагов."""
         self.merge_files()
-        self.add_chapters()
-        # self.add_cover_and_metadata()
+        # self.add_chapters()
+
+        chapter_adder = AddChapters(self.output_file, self.durations)
+        chapter_adder.add_chapters()
+
+        self.add_cover_and_metadata()
         self.my_signals.all_files_merged.emit()
 
+
+## ==============================================
+
+class AddChapters:
+    def __init__(self, output_file, chapter_durations):
+        self.output_file = output_file
+        self.chapter_durations = chapter_durations
+
+    def create_chapters_metadata(self):
+        metadata_content = ";FFMETADATA1\n"
+        current_time = 0
+        for i, duration in enumerate(self.chapter_durations):
+            start_time = current_time
+            end_time = current_time + duration
+            metadata_content += f"[CHAPTER]\nTIMEBASE=1/1\nSTART={int(start_time)}\nEND={int(end_time)}\ntitle=chapter_{i + 1:03}\n"
+            current_time = end_time
+        return metadata_content
+
+    def add_chapters(self):
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".ffmetadata") as f:
+            f.write(self.create_chapters_metadata().encode('utf-8'))
+        metadata_file = f.name
+        output_temp_file = tempfile.mktemp(suffix=".m4b")
+
+        try:
+            # Создаем временный файл с главами
+            subprocess.run([
+                "ffmpeg", "-i", self.output_file, "-i", metadata_file, "-map_metadata", "1", "-codec", "copy",
+                output_temp_file
+            ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+
+            # Заменяем оригинальный файл временным
+            shutil.move(output_temp_file, self.output_file)
+        finally:
+            os.remove(metadata_file)
+            if os.path.exists(output_temp_file):
+                os.remove(output_temp_file)
 
 ## ==============================================
 
