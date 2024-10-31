@@ -1,17 +1,7 @@
 import subprocess
 import json
+
 from mutagen.mp4 import MP4
-
-
-# def checkChapters(output_file):
-#     audio = MP4(output_file)
-#     if 'chpl' in audio:
-#         chapters = audio['chpl']
-#         for idx, chapter in enumerate(chapters, 1):
-#             start_time, title = chapter['start_time'], chapter['title']
-#             print(f"Глава {idx}: начало {start_time / 1000} сек., заголовок: {title}")
-#     else:
-#         print("Главы не найдены в файле.")
 
 
 def checkChapters(file_path):
@@ -19,8 +9,7 @@ def checkChapters(file_path):
     result = subprocess.run(
         ["ffprobe", "-i", file_path, "-print_format", "json", "-show_chapters", "-loglevel", "error"],
         capture_output=True,
-        text=True,
-        encoding='utf-8'  # Указываем кодировку для вывода
+        text=True, creationflags=subprocess.CREATE_NO_WINDOW, encoding='utf-8'  # Указываем кодировку для вывода
     )
 
     # Проверяем результат выполнения
