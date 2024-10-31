@@ -17,7 +17,7 @@ class MergeAndChapters:
         try:
             with open('filelist.txt', 'w', encoding='utf-8') as f:
                 for file in self.input_files_list:
-                    f.write(f"file '{file}'\n")
+                    f.write(f"file '{os.path.abspath(file)}'\n")
 
             merge_command = [
                 'ffmpeg', '-f', 'concat', '-safe', '0', '-i', 'filelist.txt',
@@ -31,8 +31,8 @@ class MergeAndChapters:
                 print("Объединение файлов прошло успешно.")
         except subprocess.CalledProcessError as e:
             print(f'Ошибка при объединении файлов: {e}')
-        finally:
-            os.remove('filelist.txt')
+        # finally:
+        #     os.remove('filelist.txt')
 
     def add_chapters(self):
         durations = []
