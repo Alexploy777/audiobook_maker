@@ -6,20 +6,22 @@ import tempfile
 from PyQt5.QtCore import QRunnable, pyqtSignal, QObject, pyqtSlot
 from mutagen.mp4 import MP4Cover, MP4
 
+from .addchapters import AddChapters
 from data import Config
 
 
-## creationflags=subprocess.CREATE_NO_WINDOW
+## creationflags=subprocess.CREATE_NO_WINDOW - подавляем консольные окна
 
 class ConverterSignals(QObject):
     progress_bar_signal = pyqtSignal(int)
     label_info_signal = pyqtSignal(str)
     label_info_signal_2 = pyqtSignal(str)
     all_tasks_completed = pyqtSignal()  # Сигнал о завершении всех заданий
-    all_files_merged = pyqtSignal()  # Сигнал об окончании объединения
+    all_tasks_complete = pyqtSignal()  # Сигнал об окончании объединения
 
 
-class M4BMerger(QRunnable):
+class M4bMerger(QRunnable):  # Потом убрать!
+    # class M4bMerger:
     def __init__(self, input_files, output_file, metadata):
         super().__init__()
         self.input_files = input_files  # Список путей к аудиофайлам
@@ -49,7 +51,7 @@ class M4BMerger(QRunnable):
                 for file_data in self.input_files:
                     if file_data:
                         temp_file.write(f"file '{file_data}'\n")
-            # print(temp_file.name) # Потом убрать!!!
+            print(temp_file.name)
 
             ffmpeg_command = [
                 'ffmpeg',
@@ -67,6 +69,26 @@ class M4BMerger(QRunnable):
             print(f'Ошибка при объединении файлов: {e}')
         finally:
             os.remove(temp_file.name)
+
+    def run(self):
+        """Основной метод для выполнения всех шагов."""
+        self.merge_files()
+        # self.add_chapters()
+
+        chapter_adder = AddChapters(self.output_file, self.durations)
+        chapter_adder.add_chapters()
+
+        addcoverandmetadata = AddCoverAndMetadata(self.output_file, self.metadata)
+        addcoverandmetadata.add_cover_and_metadata()
+
+        self.my_signals.all_tasks_complete.emit()
+
+
+class AddCoverAndMetadata:
+    def __init__(self, output_file, metadata):
+        self.my_signals = ConverterSignals()
+        self.output_file = output_file
+        self.metadata = metadata
 
     def add_cover_and_metadata(self):
         self.my_signals.label_info_signal.emit('Добавляю метаданные')
@@ -87,53 +109,42 @@ class M4BMerger(QRunnable):
         self.my_signals.label_info_signal.emit('Сохраняю файл')
         audio.save()
 
-    def run(self):
-        """Основной метод для выполнения всех шагов."""
-        self.merge_files()
-        # self.add_chapters()
 
-        chapter_adder = AddChapters(self.output_file, self.durations)
-        chapter_adder.add_chapters()
-
-        self.add_cover_and_metadata()
-        self.my_signals.all_files_merged.emit()
-
-
-class AddChapters:
-    def __init__(self, output_file, chapter_durations):
-        self.output_file = output_file
-        self.chapter_durations = chapter_durations
-
-    def create_chapters_metadata(self):
-        metadata_content = ";FFMETADATA1\n"
-        current_time = 0
-        for i, duration in enumerate(self.chapter_durations):
-            start_time = current_time
-            end_time = current_time + duration
-            metadata_content += f"[CHAPTER]\nTIMEBASE=1/1\nSTART={int(start_time)}\nEND={int(end_time)}\ntitle=chapter_{i + 1:03}\n"
-            current_time = end_time
-        return metadata_content
-
-    def add_chapters(self):
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".ffmetadata") as f:
-            f.write(self.create_chapters_metadata().encode('utf-8'))
-        metadata_file = f.name
-        output_temp_file = tempfile.mktemp(suffix=".m4b")
-
-        try:
-            # Создаем временный файл с главами
-            subprocess.run([
-                "ffmpeg", "-i", self.output_file, "-i", metadata_file, "-map_metadata", "1", "-codec", "copy",
-                output_temp_file
-            ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True,
-                creationflags=subprocess.CREATE_NO_WINDOW)
-
-            # Заменяем оригинальный файл временным
-            shutil.move(output_temp_file, self.output_file)
-        finally:
-            os.remove(metadata_file)
-            if os.path.exists(output_temp_file):
-                os.remove(output_temp_file)
+# class AddChapters:
+#     def __init__(self, output_file, chapter_durations):
+#         self.output_file = output_file
+#         self.chapter_durations = chapter_durations
+#
+#     def create_chapters_metadata(self):
+#         metadata_content = ";FFMETADATA1\n"
+#         current_time = 0
+#         for i, duration in enumerate(self.chapter_durations):
+#             start_time = current_time
+#             end_time = current_time + duration
+#             metadata_content += f"[CHAPTER]\nTIMEBASE=1/1\nSTART={int(start_time)}\nEND={int(end_time)}\ntitle=chapter_{i + 1:03}\n"
+#             current_time = end_time
+#         return metadata_content
+#
+#     def add_chapters(self):
+#         with tempfile.NamedTemporaryFile(delete=False, suffix=".ffmetadata") as f:
+#             f.write(self.create_chapters_metadata().encode('utf-8'))
+#         metadata_file = f.name
+#         output_temp_file = tempfile.mktemp(suffix=".m4b")
+#
+#         try:
+#             # Создаем временный файл с главами
+#             subprocess.run([
+#                 "ffmpeg", "-i", self.output_file, "-i", metadata_file, "-map_metadata", "1", "-codec", "copy",
+#                 output_temp_file
+#             ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True,
+#                 creationflags=subprocess.CREATE_NO_WINDOW)
+#
+#             # Заменяем оригинальный файл временным
+#             shutil.move(output_temp_file, self.output_file)
+#         finally:
+#             os.remove(metadata_file)
+#             if os.path.exists(output_temp_file):
+#                 os.remove(output_temp_file)
 
 
 class Converter(QRunnable):
@@ -172,7 +183,7 @@ class Converter(QRunnable):
             output_buffer.close()  # Закрываем, чтобы FFmpeg мог записать в него
 
             # Команда для FFmpeg ffmpeg -i input.mp3 -vn -c:a aac output.m4b
-            # print(self.bitrate) # Потом убрать!!!
+            print(self.bitrate)
             command = [
                 'ffmpeg', '-i', input_path, '-vn', '-c:a', self.audio_codec, '-b:a', self.bitrate, '-y',
                 # -y: перезаписываем файл, если существует

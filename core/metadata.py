@@ -74,3 +74,7 @@ class MetadataManager:
         except IndexError:
             label_cover_of_book.clear()
             QMessageBox.information(None, "Информация", "Обложка не найдена в выбранном файле.")
+
+
+if __name__ == '__main__':
+    pass
