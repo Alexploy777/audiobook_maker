@@ -14,7 +14,7 @@ def checkChapters(file_path):
 
     # Проверяем результат выполнения
     if result.returncode != 0:
-        print("Ошибка при выполнении ffprobe:", result.stderr)
+        print("Ошибка при выполнении ffprobe:", result.stderr)  # Потом убрать!!!
         return []
 
     try:

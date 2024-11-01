@@ -11,7 +11,7 @@ os.environ['PATH'] += os.pathsep + os.path.abspath('external')
 from PyQt5.QtCore import QThreadPool, QTimer, QTime, Qt
 from PyQt5.QtWidgets import QMainWindow, QApplication, QMessageBox  # Импортируем класс QMainWindow и QApplication
 from core import MetadataManager, ConverterSignals, Converter, \
-    M4BMerger  # Подключаем MetadataManager из core/metadata.py
+    M4bMerger  # Подключаем MetadataManager из core/metadata.py
 from data import Config  # Подключаем Config из data/config
 from data import FileManager  # Подключаем FileManager из data/file_manager
 from gui import Ui_MainWindow, CustomListWidget  # Подключаем класс MainWindow из gui.py
@@ -72,7 +72,7 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.newListWidget.setToolTip('Добавь файлы для создания аудиокниги')
 
     def get_files(self):
-        print('get_files')
+        print('get_files')  # Потом убрать!!!
         file_paths = []
         for i in range(self.newListWidget.count()):
             item = self.newListWidget.item(i)
@@ -110,12 +110,12 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         Config.set_audio_bitrate(bitrate)
 
     def add_files(self):
-        # self.file_manager.add_files(self.listWidget) # self.newListWidget
         self.file_manager.add_files(self.newListWidget)
 
     def remove_selected_files(self):
-        if self.file_manager.remove_files(self.newListWidget):
-            self.metadata_manager.clear_metadata(*self.get_metadata_widgets())
+        self.file_manager.remove_files(self.newListWidget)
+        # if self.file_manager.remove_files(self.newListWidget):
+        #     self.metadata_manager.clear_metadata(*self.get_metadata_widgets())
 
     def cleann_all(self):
         self.newListWidget.clear()
@@ -127,20 +127,17 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
 
     def display_metadata(self):
         selected_items = self.newListWidget.selectedItems()
-        if not selected_items:
-            # self.metadata_manager.clear_metadata(*self.get_metadata_widgets())
-            return
+        if selected_items:
+            file_path = selected_items[0].text()
+            metadata, audio = self.metadata_manager.extract_metadata(file_path)
+            self.lineEdit_title.setText(metadata["title"])
+            self.lineEdit_artist.setText(metadata["artist"])
+            self.lineEdit_album.setText(metadata["album"])
+            self.lineEdit_year.setText(metadata["year"])
+            self.lineEdit_genre.setText(metadata["genre"])
+            self.lineEdit_albumartist.setText(metadata["albumartist"])
 
-        file_path = selected_items[0].text()
-        metadata, audio = self.metadata_manager.extract_metadata(file_path)
-        self.lineEdit_title.setText(metadata["title"])
-        self.lineEdit_artist.setText(metadata["artist"])
-        self.lineEdit_album.setText(metadata["album"])
-        self.lineEdit_year.setText(metadata["year"])
-        self.lineEdit_genre.setText(metadata["genre"])
-        self.lineEdit_albumartist.setText(metadata["albumartist"])
-
-        self.metadata_manager.extract_and_show_cover(audio, self.label_cover_of_book)
+            self.metadata_manager.extract_and_show_cover(audio, self.label_cover_of_book)
 
     def upload_cover(self):
         cover_image_path = self.file_manager.upload_cover()
@@ -176,7 +173,7 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
             metadata['albumartist'] = self.lineEdit_albumartist.text()
             self.metadata = metadata
 
-            print('Конвертация запущена')
+            print('Подготовка к запуску конвертации')  # Потом убрать!!!
 
             self.completed_tasks = 0  # Сбрасываем счетчик выполненных задач
             self.progressBar.setValue(0)  # Сбрасываем прогрессбар
@@ -191,10 +188,9 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
                 some_task.my_signals.label_info_signal.connect(self.update_label)
                 some_task.my_signals.label_info_signal_2.connect(self.update_label_2)
 
-                # some_task.run()
                 self.thread_pool.start(some_task)
 
-            print('Все задачи запущены')
+            print('Все задачи запущены')  # Потом убрать!!!
 
     def update_label(self, value):
         max_length = 60
@@ -232,13 +228,11 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         # #
         # return
 
-        m4bmerger = M4BMerger(self.temp_files_list, self.output_path, self.metadata)
-        m4bmerger.my_signals.all_files_merged.connect(self.end_of_merge)
+        m4bmerger = M4bMerger(self.temp_files_list, self.output_path, self.metadata)
+        m4bmerger.my_signals.all_tasks_complete.connect(self.end_of_merge)
         m4bmerger.my_signals.progress_bar_signal.connect(self.update_progress_2)  #####
         m4bmerger.my_signals.label_info_signal.connect(self.update_label)
         self.thread_pool.start(m4bmerger)
-
-        # self.delete_temp_files(temp_files_list)
 
     def end_of_merge(self):
         self.delete_temp_files(self.temp_files_list)
