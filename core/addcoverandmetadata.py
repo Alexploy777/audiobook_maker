@@ -1,4 +1,4 @@
-from mutagen.mp4 import MP4Cover, MP4
+from mutagen.mp4 import MP4, MP4Cover
 
 from .convertersignals import ConverterSignals
 
