@@ -6,18 +6,20 @@ import tempfile
 from PyQt5.QtCore import QRunnable, pyqtSignal, QObject, pyqtSlot
 from mutagen.mp4 import MP4Cover, MP4
 
+from .convertersignals import ConverterSignals
 from .addchapters import AddChapters
+from .addcoverandmetadata import AddCoverAndMetadata
 from data import Config
 
 
 ## creationflags=subprocess.CREATE_NO_WINDOW - подавляем консольные окна
 
-class ConverterSignals(QObject):
-    progress_bar_signal = pyqtSignal(int)
-    label_info_signal = pyqtSignal(str)
-    label_info_signal_2 = pyqtSignal(str)
-    all_tasks_completed = pyqtSignal()  # Сигнал о завершении всех заданий
-    all_tasks_complete = pyqtSignal()  # Сигнал об окончании объединения
+# class ConverterSignals(QObject):
+#     progress_bar_signal = pyqtSignal(int)
+#     label_info_signal = pyqtSignal(str)
+#     label_info_signal_2 = pyqtSignal(str)
+#     all_tasks_completed = pyqtSignal()  # Сигнал о завершении всех заданий
+#     all_tasks_complete = pyqtSignal()  # Сигнал об окончании объединения
 
 
 class M4bMerger(QRunnable):  # Потом убрать!
@@ -84,30 +86,30 @@ class M4bMerger(QRunnable):  # Потом убрать!
         self.my_signals.all_tasks_complete.emit()
 
 
-class AddCoverAndMetadata:
-    def __init__(self, output_file, metadata):
-        self.my_signals = ConverterSignals()
-        self.output_file = output_file
-        self.metadata = metadata
-
-    def add_cover_and_metadata(self):
-        self.my_signals.label_info_signal.emit('Добавляю метаданные')
-        self.my_signals.progress_bar_signal.emit(60)
-        audio = MP4(self.output_file)
-
-        # Добавление метаданных
-        audio['\xa9nam'] = self.metadata.get("title")
-        audio['\xa9ART'] = self.metadata.get("artist")
-        audio['\xa9alb'] = self.metadata.get("album")
-        audio['\xa9day'] = self.metadata.get("year")
-        audio['\xa9gen'] = self.metadata.get("genre")
-
-        if cover_image_bytes := self.metadata.get('image_data'):
-            cover = MP4Cover(cover_image_bytes, imageformat=MP4Cover.FORMAT_JPEG)
-            audio['covr'] = [cover]
-        self.my_signals.progress_bar_signal.emit(90)
-        self.my_signals.label_info_signal.emit('Сохраняю файл')
-        audio.save()
+# class AddCoverAndMetadata:
+#     def __init__(self, output_file, metadata):
+#         self.my_signals = ConverterSignals()
+#         self.output_file = output_file
+#         self.metadata = metadata
+#
+#     def add_cover_and_metadata(self):
+#         self.my_signals.label_info_signal.emit('Добавляю метаданные')
+#         self.my_signals.progress_bar_signal.emit(60)
+#         audio = MP4(self.output_file)
+#
+#         # Добавление метаданных
+#         audio['\xa9nam'] = self.metadata.get("title")
+#         audio['\xa9ART'] = self.metadata.get("artist")
+#         audio['\xa9alb'] = self.metadata.get("album")
+#         audio['\xa9day'] = self.metadata.get("year")
+#         audio['\xa9gen'] = self.metadata.get("genre")
+#
+#         if cover_image_bytes := self.metadata.get('image_data'):
+#             cover = MP4Cover(cover_image_bytes, imageformat=MP4Cover.FORMAT_JPEG)
+#             audio['covr'] = [cover]
+#         self.my_signals.progress_bar_signal.emit(90)
+#         self.my_signals.label_info_signal.emit('Сохраняю файл')
+#         audio.save()
 
 
 # class AddChapters:
