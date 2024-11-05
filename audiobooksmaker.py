@@ -46,6 +46,7 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         # old_widget = self.listWidget
         # new_widget = CustomListWidget(self.allowed_extensions)
         self.newListWidget = CustomListWidget(self.allowed_extensions)
+        self.newListWidget.setFrameShape(QtWidgets.QFrame.NoFrame)
         replace_widget(self.tabWidget, self.listWidget, self.newListWidget)
 
         self.comboBox_audio_quality.addItems(Config.AUDIO_BITRATE_CHOICES)  # Добавляем варианты битрейта
