@@ -12,6 +12,7 @@ os.environ['PATH'] += os.pathsep + os.path.abspath('external')
 from PyQt5.QtCore import QThreadPool, QTimer, QTime, Qt
 from PyQt5.QtWidgets import QMainWindow, QApplication, QMessageBox, \
     QWidget  # Импортируем класс QMainWindow и QApplication
+from PyQt5.QtWidgets import QWidget, QTabWidget, QVBoxLayout, QHBoxLayout, QMainWindow
 from core import MetadataManager, ConverterSignals, Converter, \
     M4bMerger  # Подключаем MetadataManager из core/metadata.py
 from data import Config  # Подключаем Config из data/config
@@ -66,7 +67,12 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.output_path = ''
 
     def init_ui(self):
-        self.replacing_widget()
+        # self.replacing_widget()
+        parent = self.tabWidget
+        old_widget = self.listWidget
+        new_widget = CustomListWidget(self.allowed_extensions)
+        self.newListWidget = new_widget
+        self.replace_widget(parent, old_widget, new_widget)
 
         self.comboBox_audio_quality.addItems(Config.AUDIO_BITRATE_CHOICES)  # Добавляем варианты битрейта
         self.comboBox_audio_quality.setCurrentText(Config.AUDIO_BITRATE)  # Устанавливаем текущее значение из Config
@@ -92,19 +98,46 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
             self.on_all_tasks_completed)  # Подключаем сигнал завершения всех задач
         self.audibook_converter_signals.progress_bar_signal.connect(self.update_progress)
 
-    def replacing_widget(self):
-        # Получаем доступ к tab_1 и listWidget
-        tab_1 = self.tabWidget.widget(0)
-        list_widget = tab_1.findChild(QtWidgets.QListWidget)
+    def replace_widget(self, parent, old_widget, new_widget):
+        # Проверяем, есть ли у `old_widget` родительский компоновщик
+        layout = old_widget.parentWidget().layout()
+        if layout is None:
+            raise ValueError("Cannot replace widget - parent layout not found.")
 
-        # Заменяем стандартный listWidget на наш кастомный
-        self.newListWidget = CustomListWidget(self.allowed_extensions)
-        self.newListWidget.setObjectName("listWidget")  # Сохраняем имя объекта для стилей
-        index = tab_1.layout().indexOf(list_widget)
-        tab_1.layout().insertWidget(index, self.newListWidget)
-        tab_1.layout().removeWidget(list_widget)
-        list_widget.deleteLater()
-        self.newListWidget.setFrameShape(QtWidgets.QFrame.NoFrame)
+        # Находим индекс `old_widget` в компоновке
+        index = layout.indexOf(old_widget)
+        if index == -1:
+            raise ValueError("Old widget not found in the layout.")
+
+        # Получаем позицию и настройки `old_widget` в компоновке
+        item = layout.takeAt(index)
+
+        # Удаляем `old_widget` из родительского компоновщика
+        old_widget.setParent(None)
+
+        # Заменяем `old_widget` на `new_widget` в той же позиции
+        layout.insertWidget(index, new_widget)
+
+        # Пример для QTabWidget: Если `old_widget` находится в QTabWidget, обрабатываем его отдельно
+        if isinstance(parent, QTabWidget):
+            tab_index = parent.indexOf(old_widget)
+            if tab_index != -1:
+                parent.removeTab(tab_index)
+                parent.insertTab(tab_index, new_widget, new_widget.windowTitle())  # Можно указать заголовок вкладки
+
+    # def replacing_widget(self):
+    #     # Получаем доступ к tab_1 и listWidget
+    #     tab_1 = self.tabWidget.widget(0)
+    #     list_widget = tab_1.findChild(QtWidgets.QListWidget)
+    #
+    #     # Заменяем стандартный listWidget на наш кастомный
+    #     self.newListWidget = CustomListWidget(self.allowed_extensions)
+    #     self.newListWidget.setObjectName("listWidget")  # Сохраняем имя объекта для стилей
+    #     index = tab_1.layout().indexOf(list_widget)
+    #     tab_1.layout().insertWidget(index, self.newListWidget)
+    #     tab_1.layout().removeWidget(list_widget)
+    #     list_widget.deleteLater()
+    #     self.newListWidget.setFrameShape(QtWidgets.QFrame.NoFrame)
 
     def get_files(self):
         print('get_files')  # Потом убрать!!!
