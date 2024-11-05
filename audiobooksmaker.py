@@ -3,12 +3,15 @@ import os
 import subprocess
 import sys
 
+from PyQt5 import QtWidgets
+
 from utils.check_chapters import checkChapters
 
 os.environ['PATH'] += os.pathsep + os.path.abspath('external')
 
 from PyQt5.QtCore import QThreadPool, QTimer, QTime, Qt
-from PyQt5.QtWidgets import QMainWindow, QApplication, QMessageBox  # Импортируем класс QMainWindow и QApplication
+from PyQt5.QtWidgets import QMainWindow, QApplication, QMessageBox, \
+    QWidget  # Импортируем класс QMainWindow и QApplication
 from core import MetadataManager, ConverterSignals, Converter, \
     M4bMerger  # Подключаем MetadataManager из core/metadata.py
 from data import Config  # Подключаем Config из data/config
@@ -16,6 +19,33 @@ from data import FileManager  # Подключаем FileManager из data/file_
 from gui import Ui_MainWindow, CustomListWidget  # Подключаем класс MainWindow из gui.py
 from utils import Timer
 
+
+# def replace_widget(widget, old_widget_name, new_widget):
+#     """
+#     Рекурсивно заменяет виджет с заданным именем на новый виджет.
+#
+#     Args:
+#         widget: Корневой виджет для поиска.
+#         old_widget_name: Имя виджета для замены.
+#         new_widget: Новый виджет для замены.
+#     """
+#
+#     for child in widget.children():
+#         if isinstance(child, QWidget):
+#             if child.objectName() == old_widget_name:
+#                 # Сохраняем некоторые свойства старого виджета
+#                 geometry = child.geometry()
+#                 sizePolicy = child.sizePolicy()
+#
+#                 # Заменяем виджет
+#                 index = widget.layout().indexOf(child)
+#                 widget.layout().insertWidget(index, new_widget)
+#                 widget.layout().removeWidget(child)
+#                 child.deleteLater()
+#
+#                 # Восстанавливаем сохраненные свойства
+#                 new_widget.setGeometry(geometry)
+#                 new_widget.setSizePolicy(sizePolicy)
 
 class AudiobookCreator(QMainWindow, Ui_MainWindow):
     file_paths = []
@@ -37,6 +67,7 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
 
     def init_ui(self):
         self.replacing_widget()
+
         self.comboBox_audio_quality.addItems(Config.AUDIO_BITRATE_CHOICES)  # Добавляем варианты битрейта
         self.comboBox_audio_quality.setCurrentText(Config.AUDIO_BITRATE)  # Устанавливаем текущее значение из Config
         self.comboBox_audio_quality.currentTextChanged.connect(
@@ -62,13 +93,18 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.audibook_converter_signals.progress_bar_signal.connect(self.update_progress)
 
     def replacing_widget(self):
-        # Удаляем старый listWidget из компоновки
-        self.verticalLayout.removeWidget(self.listWidget)
-        self.listWidget.deleteLater()  # Удаляем стандартный listWidget
-        self.newListWidget = CustomListWidget(self.allowed_extensions,
-                                              parent=self.groupBox_files)  # Создаем кастомный CustomListWidget
-        self.verticalLayout.addWidget(self.newListWidget)  # Добавляем новый виджет в компоновку на место старого
-        self.newListWidget.setToolTip('Добавь файлы для создания аудиокниги')
+        # Получаем доступ к tab_1 и listWidget
+        tab_1 = self.tabWidget.widget(0)
+        list_widget = tab_1.findChild(QtWidgets.QListWidget)
+
+        # Заменяем стандартный listWidget на наш кастомный
+        self.newListWidget = CustomListWidget(self.allowed_extensions)
+        self.newListWidget.setObjectName("listWidget")  # Сохраняем имя объекта для стилей
+        index = tab_1.layout().indexOf(list_widget)
+        tab_1.layout().insertWidget(index, self.newListWidget)
+        tab_1.layout().removeWidget(list_widget)
+        list_widget.deleteLater()
+        self.newListWidget.setFrameShape(QtWidgets.QFrame.NoFrame)
 
     def get_files(self):
         print('get_files')  # Потом убрать!!!
