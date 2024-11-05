@@ -224,7 +224,6 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         # self.timer.stop_timer()
         # self.update_label('  ОСТАНОВКА!  ')
         # print('  ОСТАНОВКА!  ')
-        # #
         # return
 
         m4bmerger = M4bMerger(self.temp_files_list, self.output_path, self.metadata)

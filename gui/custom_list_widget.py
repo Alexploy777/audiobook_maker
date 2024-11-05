@@ -30,10 +30,16 @@ class CustomListWidget(QListWidget):
                         self.addItem(file_path)
             self.setCurrentRow(0)
 
-
     def _add_files_from_folder(self, folder_path):
         for root, dirs, files in os.walk(folder_path):
             for file in files:
                 if file.endswith(self.allowed_extensions):
                     full_path = os.path.normpath(os.path.join(root, file))  # Нормализуем путь к файлу
                     self.addItem(full_path)
+
+    def show_in_newListWidget(self, message):
+        self.addItem(message)
+
+
+if __name__ == '__main__':
+    pass

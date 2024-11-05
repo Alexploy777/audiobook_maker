@@ -2,6 +2,7 @@ import subprocess
 import json
 
 from mutagen.mp4 import MP4
+from gui import CustomListWidget
 
 
 def checkChapters(file_path):
@@ -30,6 +31,7 @@ def checkChapters(file_path):
 
         for i, (title, start_time) in enumerate(chapters, 1):
             print(f"Глава {i}: {title} - старт с {format_time(start_time)} сек.")
+            # newListWidget.show_in_newListWidget(f"Глава {i}: {title} - старт с {format_time(start_time)} сек.")
 
         # return chapters
 
