@@ -41,10 +41,6 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.output_path = ''
 
     def init_ui(self):
-        # self.replacing_widget()
-        # parent = self.tabWidget
-        # old_widget = self.listWidget
-        # new_widget = CustomListWidget(self.allowed_extensions)
         self.newListWidget = CustomListWidget(self.allowed_extensions)
         self.newListWidget.setFrameShape(QtWidgets.QFrame.NoFrame)
         replace_widget(self.tabWidget, self.listWidget, self.newListWidget)
