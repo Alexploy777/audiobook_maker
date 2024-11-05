@@ -1,5 +1,5 @@
 import os
-from PyQt5.QtWidgets import QListWidget, QAbstractItemView
+from PyQt5.QtWidgets import QListWidget, QAbstractItemView, QTabWidget
 from PyQt5.QtCore import Qt
 
 
