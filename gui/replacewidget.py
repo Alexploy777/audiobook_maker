@@ -73,3 +73,6 @@ class WidgetReplacer:
 #         if tab_index != -1:
 #             parent.removeTab(tab_index)
 #             parent.insertTab(tab_index, new_widget, new_widget.windowTitle())  # Можно указать заголовок вкладки
+
+if __name__ == '__main__':
+    pass
