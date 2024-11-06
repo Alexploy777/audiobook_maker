@@ -5,7 +5,7 @@ import sys
 
 from PyQt5 import QtWidgets
 
-from gui.replacewidget import replace_widget
+from gui import WidgetReplacer
 from utils.check_chapters import checkChapters
 
 os.environ['PATH'] += os.pathsep + os.path.abspath('external')
@@ -43,7 +43,11 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
     def init_ui(self):
         self.newListWidget = CustomListWidget(self.allowed_extensions)
         self.newListWidget.setFrameShape(QtWidgets.QFrame.NoFrame)
-        replace_widget(self.tabWidget, self.listWidget, self.newListWidget)
+
+        # replace_widget(self.tabWidget, self.listWidget, self.newListWidget)
+        replacer = WidgetReplacer(self.tabWidget)
+        replacer.replace_widget(self.listWidget, self.newListWidget)
+
 
         self.comboBox_audio_quality.addItems(Config.AUDIO_BITRATE_CHOICES)  # Добавляем варианты битрейта
         self.comboBox_audio_quality.setCurrentText(Config.AUDIO_BITRATE)  # Устанавливаем текущее значение из Config
