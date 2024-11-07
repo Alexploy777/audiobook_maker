@@ -29,16 +29,15 @@ class Timer:
 import platform
 import subprocess
 
-
-def run_ffmpeg_command(command):
-    system_type = platform.system()
-    if system_type == 'Windows':
-        startupinfo = subprocess.STARTUPINFO()
-        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        startupinfo.wShowWindow = subprocess.SW_HIDE
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, startupinfo=startupinfo)
-    else:
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-    stdout, stderr = process.communicate()
-    return stdout, stderr
+# def run_ffmpeg_command(command):
+#     system_type = platform.system()
+#     if system_type == 'Windows':
+#         startupinfo = subprocess.STARTUPINFO()
+#         startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+#         startupinfo.wShowWindow = subprocess.SW_HIDE
+#         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, startupinfo=startupinfo)
+#     else:
+#         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+#
+#     stdout, stderr = process.communicate()
+#     return stdout, stderr

@@ -5,8 +5,8 @@ import sys
 
 from PyQt5 import QtWidgets
 
-from gui import WidgetReplacer
-from utils.check_chapters import checkChapters
+from gui import WidgetReplacer, TableViewManager
+from utils import CheckChapters
 
 os.environ['PATH'] += os.pathsep + os.path.abspath('external')
 
@@ -38,6 +38,9 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.init_ui()
         self.init_convertermanager()
         self.timer = Timer(self.lcdNumber)
+        self.tableviewmanager = TableViewManager(self.tableView, ['Имя главы', 'Время начала'])
+        self.checkchapters = CheckChapters(self.tableviewmanager)
+
         self.output_path = ''
 
     def init_ui(self):
@@ -127,6 +130,8 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.progressBar.setValue(0)
         self.update_label('Добавь файлы для создания новой книги')
         self.update_label_2('Или брось целиком папку в окно')
+        self.tabWidget.setCurrentIndex(0)
+        self.tableviewmanager.clean()
 
     def display_metadata(self):
         selected_items = self.newListWidget.selectedItems()
@@ -247,7 +252,12 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.audibook_converter_signals.label_info_signal_2.emit(f'{self.output_path}')
         self.progressBar.setValue(100)
         self.timer.stop_timer()
-        checkChapters(self.output_path)
+
+        # checkChapters(self.output_path)
+
+        self.checkchapters.checkChapters(self.output_path)
+        self.tabWidget.setCurrentIndex(1)
+
 
 
 if __name__ == '__main__':

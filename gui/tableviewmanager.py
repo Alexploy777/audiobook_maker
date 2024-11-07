@@ -15,7 +15,10 @@ class TableViewManager:
         self.model.setHorizontalHeaderLabels(headers)
         self.table_view.setModel(self.model)
 
-    def add_row(self, values: list):
+        # Отключаем индексы строк
+        self.table_view.verticalHeader().setVisible(False)
+
+    def add_row_list(self, values: list):
         """
         Добавляет новую строку в таблицу.
 
@@ -23,6 +26,15 @@ class TableViewManager:
         """
         row = [QStandardItem(str(value)) for value in values]
         self.model.appendRow(row)
+
+        # Подстраиваем ширину колонок под содержимое
+        self.table_view.resizeColumnsToContents()
+
+        # Добавляем немного ширины каждой колонке (например, +20 пикселей)
+        extra_width = 20
+        for column in range(self.model.columnCount()):
+            current_width = self.table_view.columnWidth(column)
+            self.table_view.setColumnWidth(column, current_width + extra_width)
 
     def clean(self):
         """

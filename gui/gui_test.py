@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(774, 795)
+        MainWindow.resize(774, 778)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.verticalLayout_12 = QtWidgets.QVBoxLayout(self.centralwidget)
@@ -67,7 +67,6 @@ class Ui_MainWindow(object):
         self.tab_2 = QtWidgets.QWidget()
         self.tab_2.setObjectName("tab_2")
         self.verticalLayout_9 = QtWidgets.QVBoxLayout(self.tab_2)
-        self.verticalLayout_9.setContentsMargins(0, -1, 0, -1)
         self.verticalLayout_9.setObjectName("verticalLayout_9")
         self.tableView = QtWidgets.QTableView(self.tab_2)
         self.tableView.setFrameShape(QtWidgets.QFrame.NoFrame)
@@ -207,7 +206,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -238,7 +237,6 @@ class Ui_MainWindow(object):
 
 if __name__ == "__main__":
     import sys
-
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()
