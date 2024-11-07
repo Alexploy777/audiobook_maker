@@ -1,11 +1,6 @@
 import subprocess
 import json
 
-from gui import TableViewManager
-
-
-# from mutagen.mp4 import MP4
-# from gui import CustomListWidget
 
 class CheckChapters:
     def __init__(self, output_witget):
@@ -36,10 +31,8 @@ class CheckChapters:
                 title = chapter["tags"].get("title", f"Chapter {len(chapters) + 1}")
                 chapters.append((title, start_time))
 
-            # self.output_witget.add_row_list(['', ''])
-
             for i, (title, start_time) in enumerate(chapters, 1):
-                print(f"Глава {i}: {title} - старт с {self.format_time(start_time)} сек.")
+                # print(f"Глава {i}: {title} - старт с {self.format_time(start_time)} сек.")
                 self.output_witget.add_row_list([f'  {title}', f'    {self.format_time(start_time)} сек.'])
                 # newListWidget.show_in_newListWidget(f"Глава {i}: {title} - старт с {format_time(start_time)} сек.")
 
