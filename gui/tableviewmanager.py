@@ -15,6 +15,15 @@ class TableViewManager:
         self.model.setHorizontalHeaderLabels(headers)
         self.table_view.setModel(self.model)
 
+        # Устанавливаем стиль для нижней границы заголовков
+        self.table_view.setStyleSheet("""
+            QHeaderView::section {
+                border: none;
+                border-bottom: 1px solid black; /* Нижняя граница */
+            }
+        """)
+
+
         # Отключаем индексы строк
         self.table_view.verticalHeader().setVisible(False)
 
