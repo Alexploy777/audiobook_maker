@@ -31,7 +31,7 @@ class TableViewManager:
         self.table_view.resizeColumnsToContents()
 
         # Добавляем немного ширины каждой колонке (например, +20 пикселей)
-        extra_width = 20
+        extra_width = 40
         for column in range(self.model.columnCount()):
             current_width = self.table_view.columnWidth(column)
             self.table_view.setColumnWidth(column, current_width + extra_width)
