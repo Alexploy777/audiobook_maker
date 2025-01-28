@@ -28,6 +28,7 @@ class M4bMerger(QRunnable):
             )
             duration = float(result.stdout.strip())
             durations.append(duration)
+
         return durations
 
     def merge_files(self):

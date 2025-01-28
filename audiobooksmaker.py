@@ -4,6 +4,7 @@ import subprocess
 import sys
 
 from PyQt5 import QtWidgets
+from PyQt5.QtGui import QIcon
 
 from gui import WidgetReplacer, TableViewManager
 from utils import CheckChapters
@@ -12,7 +13,7 @@ os.environ['PATH'] += os.pathsep + os.path.abspath('external')
 
 from PyQt5.QtCore import QThreadPool, QTimer, QTime, Qt
 from PyQt5.QtWidgets import QMainWindow, QApplication, QMessageBox, \
-    QWidget  # Импортируем класс QMainWindow и QApplication
+    QWidget, QSystemTrayIcon, QMenu, QAction  # Импортируем класс QMainWindow и QApplication
 from PyQt5.QtWidgets import QWidget, QTabWidget, QVBoxLayout, QHBoxLayout, QMainWindow
 from core import MetadataManager, ConverterSignals, Converter, \
     M4bMerger  # Подключаем MetadataManager из core/metadata.py
@@ -32,6 +33,9 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         Config.load_config()  # Загружаем конфигурацию при запуске приложения
         self.setWindowTitle(Config.WINDOWTITLE)
         self.allowed_extensions = tuple(Config.ALLOWED_EXTENSIONS)
+        self.setWindowIcon(QIcon("Audiobook2.png"))
+        self.init_tray_icon()
+
         self.file_manager = FileManager(self)
         self.metadata_manager = MetadataManager(self.label_cover_of_book)
         self.progressBar.setValue(0)  # Устанавливаем начальное значение
@@ -42,6 +46,30 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.checkchapters = CheckChapters(self.tableviewmanager)
 
         self.output_path = ''
+
+    def init_tray_icon(self):
+        # Создаем объект QSystemTrayIcon
+        self.tray_icon = QSystemTrayIcon(self)
+        self.tray_icon.setIcon(QIcon("Audiobook2.png"))  # Устанавливаем иконку для трея
+
+        # Создаем меню для трея
+        tray_menu = QMenu()
+
+        # Добавляем действия в меню
+        show_action = QAction("Открыть", self)
+        show_action.triggered.connect(self.show)  # Показываем окно при выборе
+        tray_menu.addAction(show_action)
+
+        quit_action = QAction("Выход", self)
+        quit_action.triggered.connect(QApplication.quit)  # Полностью завершает приложение
+        tray_menu.addAction(quit_action)
+
+        # Присоединяем меню к иконке
+        self.tray_icon.setContextMenu(tray_menu)
+
+        # Отображаем иконку в трее
+        self.tray_icon.show()
+
 
     def init_ui(self):
         self.newListWidget = CustomListWidget(self.allowed_extensions)
