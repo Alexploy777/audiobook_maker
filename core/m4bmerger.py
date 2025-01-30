@@ -41,7 +41,7 @@ class M4bMerger(QRunnable):
                 for file_data in self.input_files:
                     if file_data:
                         temp_file.write(f"file '{file_data}'\n")
-            print(temp_file.name)
+            # print(temp_file.name)
 
             ffmpeg_command = [
                 'ffmpeg',
@@ -73,12 +73,14 @@ class M4bMerger(QRunnable):
 
             process.wait()
             if process.returncode == 0:
-                print(f'Файлы успешно объединены в {self.output_file}')
+                # print(f'Файлы успешно объединены в {self.output_file}')
+                self.my_signals.label_info_signal.emit(f'Файлы успешно объединены в {self.output_file}')
             else:
-                print(f'Ошибка при объединении файлов: {process.stderr.read()}')
-
+                # print(f'Ошибка при объединении файлов: {process.stderr.read()}')
+                self.my_signals.label_info_signal.emit(f'Ошибка при объединении файлов: {process.stderr.read()}')
         except Exception as e:
-            print(f'Ошибка при объединении файлов: {e}')
+            # print(f'Ошибка при объединении файлов: {e}')
+            self.my_signals.label_info_signal.emit(f'Ошибка при объединении файлов: {e}')
         finally:
             os.remove(temp_file.name)
 

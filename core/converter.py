@@ -36,7 +36,8 @@ class Converter(QRunnable):
         try:
             # Проверка, существует ли файл
             if not os.path.isfile(input_path):
-                print(f"Файл не найден: {input_path}")
+                # print(f"Файл не найден: {input_path}")
+                self.my_signals.label_info_signal.emit(f"Файл не найден: {input_path}")
                 return None
 
             # Создаём временный файл
@@ -44,7 +45,7 @@ class Converter(QRunnable):
             output_buffer.close()  # Закрываем, чтобы FFmpeg мог записать в него
 
             # Команда для FFmpeg ffmpeg -i input.mp3 -vn -c:a aac output.m4b
-            print(self.bitrate)
+            # print(self.bitrate)
             command = [
                 'ffmpeg', '-i', input_path, '-vn', '-c:a', self.audio_codec, '-b:a', self.bitrate, '-y',
                 # -y: перезаписываем файл, если существует
@@ -61,12 +62,15 @@ class Converter(QRunnable):
             )
 
             if process.returncode != 0:  # Проверяем успешность выполнения
-                print(f"Ошибка FFmpeg: {process.stderr}")
+                # print(f"Ошибка FFmpeg: {process.stderr}")
+                self.my_signals.label_info_signal.emit(f"Файл не найден: {input_path}")
                 return None
 
-            print(f"Файл успешно конвертирован: {input_path}")
+            # print(f"Файл успешно конвертирован: {input_path}")
+            self.my_signals.label_info_signal.emit(f"Файл успешно конвертирован: {input_path}")
             return output_buffer
 
         except Exception as e:
-            print(f"Ошибка при конвертации файла {input_path}: {e}")
+            # print(f"Ошибка при конвертации файла {input_path}: {e}")
+            self.my_signals.label_info_signal.emit(f"Ошибка при конвертации файла {input_path}: {e}")
             return None

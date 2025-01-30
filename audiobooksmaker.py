@@ -70,7 +70,6 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         # Отображаем иконку в трее
         self.tray_icon.show()
 
-
     def init_ui(self):
         self.newListWidget = CustomListWidget(self.allowed_extensions)
         self.newListWidget.setFrameShape(QtWidgets.QFrame.NoFrame)
@@ -78,7 +77,6 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         # replace_widget(self.tabWidget, self.listWidget, self.newListWidget)
         replacer = WidgetReplacer(self.tabWidget)
         replacer.replace_widget(self.listWidget, self.newListWidget)
-
 
         self.comboBox_audio_quality.addItems(Config.AUDIO_BITRATE_CHOICES)  # Добавляем варианты битрейта
         self.comboBox_audio_quality.setCurrentText(Config.AUDIO_BITRATE)  # Устанавливаем текущее значение из Config
@@ -104,9 +102,8 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
             self.on_all_tasks_completed)  # Подключаем сигнал завершения всех задач
         self.audibook_converter_signals.progress_bar_signal.connect(self.update_progress)
 
-
     def get_files(self):
-        print('get_files')  # Потом убрать!!!
+        # print('get_files')  # Потом убрать!!!
         file_paths = []
         for i in range(self.newListWidget.count()):
             item = self.newListWidget.item(i)
@@ -209,8 +206,6 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
             metadata['albumartist'] = self.lineEdit_albumartist.text()
             self.metadata = metadata
 
-            print('Подготовка к запуску конвертации')  # Потом убрать!!!
-
             self.completed_tasks = 0  # Сбрасываем счетчик выполненных задач
             self.progressBar.setValue(0)  # Сбрасываем прогрессбар
             self.quantity = len(self.file_paths)  # подсчитываем общее количество файлов
@@ -285,7 +280,6 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
 
         self.checkchapters.checkChapters(self.output_path)
         self.tabWidget.setCurrentIndex(1)
-
 
 
 if __name__ == '__main__':
