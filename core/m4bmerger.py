@@ -82,34 +82,6 @@ class M4bMerger(QRunnable):
         finally:
             os.remove(temp_file.name)
 
-    # def merge_files(self):
-    #     """Объединение m4b файлов с помощью ffmpeg через временный список файлов."""
-    #     self.my_signals.label_info_signal.emit('Начинаю объединять файлы')
-    #     self.my_signals.progress_bar_signal.emit(30)
-    #     try:
-    #         with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_file:
-    #             for file_data in self.input_files:
-    #                 if file_data:
-    #                     temp_file.write(f"file '{file_data}'\n")
-    #         print(temp_file.name)
-    #
-    #         ffmpeg_command = [
-    #             'ffmpeg',
-    #             '-f', 'concat',
-    #             '-safe', '0',
-    #             '-i', temp_file.name,
-    #             '-c', 'copy',
-    #             '-y',
-    #             self.output_file
-    #         ]
-    #         subprocess.run(ffmpeg_command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-    #                        creationflags=subprocess.CREATE_NO_WINDOW)
-    #         print(f'Файлы успешно объединены в {self.output_file}')
-    #     except subprocess.CalledProcessError as e:
-    #         print(f'Ошибка при объединении файлов: {e}')
-    #     finally:
-    #         os.remove(temp_file.name)
-
     def run(self):
         """Основной метод для выполнения всех шагов."""
         self.merge_files()
