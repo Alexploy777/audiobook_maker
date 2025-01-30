@@ -62,9 +62,6 @@ class M4bMerger(QRunnable):
 
             while True:
                 output = process.stderr.readline()
-
-                print(output)
-
                 if output == '' and process.poll() is not None:
                     break
                 if output:
@@ -92,7 +89,7 @@ class M4bMerger(QRunnable):
         """Основной метод для выполнения всех шагов."""
         self.merge_files()
 
-        chapter_adder = AddChapters(self.output_file, self.durations)
+        chapter_adder = AddChapters(self.output_file, self.durations, self.my_signals)
         chapter_adder.add_chapters()
 
         addcoverandmetadata = AddCoverAndMetadata(self.output_file, self.metadata)
