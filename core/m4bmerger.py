@@ -34,6 +34,7 @@ class M4bMerger(QRunnable):
 
     def merge_files(self):
         self.my_signals.label_info_signal.emit('Начинаю объединять файлы')
+        self.my_signals.label_info_signal_2.emit('--><--')
         self.my_signals.progress_bar_signal.emit(0)
 
         try:
@@ -61,6 +62,9 @@ class M4bMerger(QRunnable):
 
             while True:
                 output = process.stderr.readline()
+
+                print(output)
+
                 if output == '' and process.poll() is not None:
                     break
                 if output:

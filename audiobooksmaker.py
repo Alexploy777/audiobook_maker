@@ -193,6 +193,7 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         if self.checking_all_data():
             self.timer.reset_timer()
             self.timer.start_timer()
+            self.label_progress_description_2.clear()
             self.audibook_converter_signals.label_info_signal.emit('Запустил конвертацию..')
 
             bitrate = Config.AUDIO_BITRATE
@@ -252,6 +253,7 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         # print(temp_files_list)
         # QMessageBox.information(None, "Завершено", "Все задания выполнены!")
         self.audibook_converter_signals.label_info_signal.emit('Все файлы успешно конвертированы!')
+        self.audibook_converter_signals.label_info_signal_2.emit('Запускаю объединение файлов..')
 
         # self.timer.stop_timer()
         # self.update_label('  ОСТАНОВКА!  ')
@@ -260,8 +262,9 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
 
         m4bmerger = M4bMerger(self.temp_files_list, self.output_path, self.metadata)
         m4bmerger.my_signals.all_tasks_complete.connect(self.end_of_merge)
-        m4bmerger.my_signals.progress_bar_signal.connect(self.update_progress_2)  #####
+        m4bmerger.my_signals.progress_bar_signal.connect(self.update_progress)
         m4bmerger.my_signals.label_info_signal.connect(self.update_label)
+        m4bmerger.my_signals.label_info_signal_2.connect(self.update_label_2)
         self.thread_pool.start(m4bmerger)
 
     def end_of_merge(self):
