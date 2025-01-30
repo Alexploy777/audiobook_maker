@@ -33,7 +33,7 @@ class M4bMerger(QRunnable):
         return durations
 
     def merge_files(self):
-        self.my_signals.label_info_signal.emit('Начинаю объединять файлы')
+        self.my_signals.label_info_signal.emit('Начинаю объединять файлы..')
         self.my_signals.label_info_signal_2.emit('--><--')
         self.my_signals.progress_bar_signal.emit(0)
 
@@ -92,10 +92,10 @@ class M4bMerger(QRunnable):
         chapter_adder = AddChapters(self.output_file, self.durations, self.my_signals)
         chapter_adder.add_chapters()
 
-        addcoverandmetadata = AddCoverAndMetadata(self.output_file, self.metadata)
+        addcoverandmetadata = AddCoverAndMetadata(self.output_file, self.metadata, self.my_signals)
         addcoverandmetadata.add_cover_and_metadata()
 
-        self.my_signals.all_tasks_complete.emit()
+        self.my_signals.signal_complete_merge.emit()
 
 
 if __name__ == '__main__':

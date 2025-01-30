@@ -6,4 +6,4 @@ class ConverterSignals(QObject):
     label_info_signal = pyqtSignal(str)
     label_info_signal_2 = pyqtSignal(str)
     all_tasks_completed = pyqtSignal()  # Сигнал о завершении всех заданий
-    all_tasks_complete = pyqtSignal()  # Сигнал об окончании объединения
+    signal_complete_merge = pyqtSignal()  # Сигнал об окончании объединения

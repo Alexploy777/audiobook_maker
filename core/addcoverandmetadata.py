@@ -4,13 +4,14 @@ from .convertersignals import ConverterSignals
 
 
 class AddCoverAndMetadata:
-    def __init__(self, output_file, metadata):
-        self.my_signals = ConverterSignals()
+    def __init__(self, output_file, metadata, my_signals):
+        self.my_signals = my_signals
         self.output_file = output_file
         self.metadata = metadata
 
     def add_cover_and_metadata(self):
-        self.my_signals.label_info_signal.emit('Добавляю метаданные')
+        self.my_signals.label_info_signal.emit('Добавляю метаданные..')
+        self.my_signals.label_info_signal_2.emit('====')
         self.my_signals.progress_bar_signal.emit(60)
         audio = MP4(self.output_file)
 

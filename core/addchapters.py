@@ -55,6 +55,7 @@ class AddChapters:
         self.my_signals = my_signals  # Функция для обновления прогресса
         self.my_signals.progress_bar_signal.emit(0)
         self.my_signals.label_info_signal.emit('Добавляю главы..')
+        self.my_signals.label_info_signal_2.emit('--<>--.')
 
     def create_chapters_metadata(self):
         metadata_content = ";FFMETADATA1\n"
