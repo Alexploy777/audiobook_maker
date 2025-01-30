@@ -1,4 +1,5 @@
 import os
+import re
 import subprocess
 import tempfile
 
@@ -32,15 +33,20 @@ class M4bMerger(QRunnable):
         return durations
 
     def merge_files(self):
-        """Объединение m4b файлов с помощью ffmpeg через временный список файлов."""
+        """Объединение m4b файлов с отображением прогресса."""
         self.my_signals.label_info_signal.emit('Начинаю объединять файлы')
-        self.my_signals.progress_bar_signal.emit(30)
+        self.my_signals.progress_bar_signal.emit(0)
+
+        total_duration = sum(self.durations)  # Общая продолжительность в секундах
+        if total_duration == 0:
+            self.my_signals.progress_bar_signal.emit(100)
+            return
+
         try:
             with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_file:
                 for file_data in self.input_files:
                     if file_data:
                         temp_file.write(f"file '{file_data}'\n")
-            print(temp_file.name)
 
             ffmpeg_command = [
                 'ffmpeg',
@@ -51,13 +57,58 @@ class M4bMerger(QRunnable):
                 '-y',
                 self.output_file
             ]
-            subprocess.run(ffmpeg_command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                           creationflags=subprocess.CREATE_NO_WINDOW)
-            print(f'Файлы успешно объединены в {self.output_file}')
-        except subprocess.CalledProcessError as e:
+
+            process = subprocess.Popen(ffmpeg_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+                                       creationflags=subprocess.CREATE_NO_WINDOW)
+
+            for line in process.stderr:
+                match = re.search(r'time=(\d+):(\d+):(\d+).(\d+)', line)
+                if match:
+                    hours, minutes, seconds, _ = map(int, match.groups())
+                    current_time = hours * 3600 + minutes * 60 + seconds
+                    progress = int((current_time / total_duration) * 100)
+                    self.my_signals.progress_bar_signal.emit(progress)
+
+            process.wait()
+            if process.returncode == 0:
+                self.my_signals.progress_bar_signal.emit(100)
+                print(f'Файлы успешно объединены в {self.output_file}')
+            else:
+                print(f'Ошибка при объединении файлов: {process.returncode}')
+
+        except Exception as e:
             print(f'Ошибка при объединении файлов: {e}')
+
         finally:
             os.remove(temp_file.name)
+
+    # def merge_files(self):
+    #     """Объединение m4b файлов с помощью ffmpeg через временный список файлов."""
+    #     self.my_signals.label_info_signal.emit('Начинаю объединять файлы')
+    #     self.my_signals.progress_bar_signal.emit(30)
+    #     try:
+    #         with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_file:
+    #             for file_data in self.input_files:
+    #                 if file_data:
+    #                     temp_file.write(f"file '{file_data}'\n")
+    #         print(temp_file.name)
+    #
+    #         ffmpeg_command = [
+    #             'ffmpeg',
+    #             '-f', 'concat',
+    #             '-safe', '0',
+    #             '-i', temp_file.name,
+    #             '-c', 'copy',
+    #             '-y',
+    #             self.output_file
+    #         ]
+    #         subprocess.run(ffmpeg_command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+    #                        creationflags=subprocess.CREATE_NO_WINDOW)
+    #         print(f'Файлы успешно объединены в {self.output_file}')
+    #     except subprocess.CalledProcessError as e:
+    #         print(f'Ошибка при объединении файлов: {e}')
+    #     finally:
+    #         os.remove(temp_file.name)
 
     def run(self):
         """Основной метод для выполнения всех шагов."""
