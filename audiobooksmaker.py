@@ -223,6 +223,9 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         if self.completed_tasks == self.quantity:
             self.audibook_converter_signals.all_tasks_completed.emit()
 
+    def update_progress_2(self, value):
+        self.progressBar.setValue(value)
+
     def on_all_tasks_completed(self):
         """Обрабатывает завершение всех задач."""
         self.temp_files_list = [f.name for f in self.output_temp_files_list if f is not None]
@@ -231,7 +234,7 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
 
         m4bmerger = M4bMerger(self.temp_files_list, self.output_path, self.metadata)
         m4bmerger.my_signals.signal_complete_merge.connect(self.end_of_merge)
-        m4bmerger.my_signals.progress_bar_signal.connect(self.update_progress)
+        m4bmerger.my_signals.progress_bar_signal.connect(self.update_progress_2)
         m4bmerger.my_signals.label_info_signal.connect(self.update_label)
         m4bmerger.my_signals.label_info_signal_2.connect(self.update_label_2)
         self.thread_pool.start(m4bmerger)
