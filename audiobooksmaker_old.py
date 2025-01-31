@@ -1,19 +1,26 @@
-from PyQt5 import QtWidgets
-from PyQt5.QtCore import QThreadPool
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QMainWindow, QApplication, QMessageBox, QWidget, QSystemTrayIcon, QMenu, QAction
-from core import MetadataManager, ConverterSignals, Converter, M4bMerger
-from data import Config  # Подключаем Config из data/config
-from data import FileManager  # Подключаем FileManager из data/file_manager
-from gui import Ui_MainWindow, CustomListWidget  # Подключаем класс MainWindow из gui.py
-from gui import WidgetReplacer, TableViewManager
-from utils import CheckChapters
-from utils import Timer
+# audiobooksmaker.py
 import os
 import subprocess
 import sys
 
+from PyQt5 import QtWidgets
+from PyQt5.QtGui import QIcon
+
+from gui import WidgetReplacer, TableViewManager
+from utils import CheckChapters
+
 os.environ['PATH'] += os.pathsep + os.path.abspath('external')
+
+from PyQt5.QtCore import QThreadPool, QTimer, QTime, Qt
+from PyQt5.QtWidgets import QMainWindow, QApplication, QMessageBox, \
+    QWidget, QSystemTrayIcon, QMenu, QAction  # Импортируем класс QMainWindow и QApplication
+from PyQt5.QtWidgets import QWidget, QTabWidget, QVBoxLayout, QHBoxLayout, QMainWindow
+from core import MetadataManager, ConverterSignals, Converter, \
+    M4bMerger  # Подключаем MetadataManager из core/metadata.py
+from data import Config  # Подключаем Config из data/config
+from data import FileManager  # Подключаем FileManager из data/file_manager
+from gui import Ui_MainWindow, CustomListWidget  # Подключаем класс MainWindow из gui.py
+from utils import Timer
 
 
 class AudiobookCreator(QMainWindow, Ui_MainWindow):
@@ -271,8 +278,6 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.audibook_converter_signals.label_info_signal_2.emit(f'{self.output_path}')
         self.progressBar.setValue(100)
         self.timer.stop_timer()
-
-        # checkChapters(self.output_path)
 
         self.checkchapters.checkChapters(self.output_path)
         self.tabWidget.setCurrentIndex(1)
