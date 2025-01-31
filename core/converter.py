@@ -1,11 +1,9 @@
+from .convertersignals import ConverterSignals
+from PyQt5.QtCore import QRunnable, pyqtSlot
+from data import Config
 import os
 import subprocess
 import tempfile
-
-from PyQt5.QtCore import QRunnable, pyqtSlot
-
-from data import Config
-from .convertersignals import ConverterSignals
 
 
 class Converter(QRunnable):
