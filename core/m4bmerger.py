@@ -2,12 +2,10 @@ import os
 import re
 import subprocess
 import tempfile
-
 from PyQt5.QtCore import QRunnable
-
-from .convertersignals import ConverterSignals
 from .addchapters import AddChapters
 from .addcoverandmetadata import AddCoverAndMetadata
+from .convertersignals import ConverterSignals
 
 
 class M4bMerger(QRunnable):
