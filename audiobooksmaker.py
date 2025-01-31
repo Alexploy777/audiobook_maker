@@ -26,7 +26,7 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         Config.load_config()  # Загружаем конфигурацию при запуске приложения
         self.setWindowTitle(Config.WINDOWTITLE)
         self.allowed_extensions = tuple(Config.ALLOWED_EXTENSIONS)
-        self.setWindowIcon(QIcon("Audiobook2.png"))
+        self.setWindowIcon(QIcon("audiobook.png"))
         self.init_tray_icon()
 
         self.file_manager = FileManager(self)
@@ -43,7 +43,7 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
     def init_tray_icon(self):
         # Создаем объект QSystemTrayIcon
         self.tray_icon = QSystemTrayIcon(self)
-        self.tray_icon.setIcon(QIcon("Audiobook2.png"))  # Устанавливаем иконку для трея
+        self.tray_icon.setIcon(QIcon("audiobook.png"))  # Устанавливаем иконку для трея
 
         # Создаем меню для трея
         tray_menu = QMenu()
@@ -214,8 +214,6 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
                 some_task.my_signals.label_info_signal_2.connect(self.update_label_2)
 
                 self.thread_pool.start(some_task)
-
-            print('Все задачи запущены')  # Потом убрать!!!
 
     def update_label(self, value):
         max_length = 60
