@@ -1,7 +1,5 @@
 from mutagen.mp4 import MP4, MP4Cover
 
-from .convertersignals import ConverterSignals
-
 
 class AddCoverAndMetadata:
     def __init__(self, output_file, metadata, my_signals):
