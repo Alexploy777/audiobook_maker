@@ -118,6 +118,18 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         """Удаляет выбранные файлы из списка."""
         self.file_manager.remove_files(self.newListWidget)
 
+    def get_metadata_widgets(self):
+        return (
+            self.lineEdit_title,
+            self.lineEdit_artist,
+            self.lineEdit_album,
+            self.lineEdit_year,
+            self.lineEdit_genre,
+            self.lineEdit_albumartist,
+            self.label_cover_of_book,
+        )
+
+
     def cleann_all(self):
         """Очищает все поля и сбрасывает состояние."""
         self.newListWidget.clear()
@@ -167,14 +179,13 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
             self.label_progress_description_2.clear()
             self.audibook_converter_signals.label_info_signal.emit('Запустил конвертацию..')
 
-            metadata = {
-                'title': self.lineEdit_title.text(),
-                'artist': self.lineEdit_artist.text(),
-                'album': self.lineEdit_album.text(),
-                'year': self.lineEdit_year.text(),
-                'genre': self.lineEdit_genre.text(),
-                'albumartist': self.lineEdit_albumartist.text(),
-            }
+            metadata = self.metadata_manager.metadata
+            metadata['title'] = self.lineEdit_title.text()
+            metadata['artist'] = self.lineEdit_artist.text()
+            metadata['album'] = self.lineEdit_album.text()
+            metadata['year'] = self.lineEdit_year.text()
+            metadata['genre'] = self.lineEdit_genre.text()
+            metadata['albumartist'] = self.lineEdit_albumartist.text()
             self.metadata = metadata
 
             self.completed_tasks = 0

@@ -1,119 +1,124 @@
-# # core/addchapters.py
-# import os
-# import shutil
-# import subprocess
-# import tempfile
-#
-#
-# class AddChapters:
-#     def __init__(self, output_file, chapter_durations):
-#         self.output_file = output_file
-#         self.chapter_durations = chapter_durations
-#
-#     def create_chapters_metadata(self):
-#         metadata_content = ";FFMETADATA1\n"
-#         current_time = 0
-#         for i, duration in enumerate(self.chapter_durations):
-#             start_time = current_time
-#             end_time = current_time + duration
-#             metadata_content += f"[CHAPTER]\nTIMEBASE=1/1\nSTART={int(start_time)}\nEND={int(end_time)}\ntitle=chapter_{i + 1:03}\n"
-#             current_time = end_time
-#         return metadata_content
-#
-#     def add_chapters(self):
-#         with tempfile.NamedTemporaryFile(delete=False, suffix=".ffmetadata") as f:
-#             f.write(self.create_chapters_metadata().encode('utf-8'))
-#         metadata_file = f.name
-#         output_temp_file = tempfile.mktemp(suffix=".m4b")
-#
-#         try:
-#             # Создаем временный файл с главами
-#             subprocess.run([
-#                 "ffmpeg", "-i", self.output_file, "-i", metadata_file, "-map_metadata", "1", "-codec", "copy",
-#                 output_temp_file
-#             ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True,
-#                 creationflags=subprocess.CREATE_NO_WINDOW)
-#
-#             # Заменяем оригинальный файл временным
-#             shutil.move(output_temp_file, self.output_file)
-#         finally:
-#             os.remove(metadata_file)
-#             if os.path.exists(output_temp_file):
-#                 os.remove(output_temp_file)
-
-
+import os
+import re
+import shutil
 import subprocess
 import tempfile
-import os
-import shutil
-import re
+from io import StringIO
+
 
 class AddChapters:
     def __init__(self, output_file, chapter_durations, my_signals=None):
         self.output_file = output_file
         self.chapter_durations = chapter_durations
-        self.my_signals = my_signals  # Функция для обновления прогресса
-        self.my_signals.progress_bar_signal.emit(0)
-        self.my_signals.label_info_signal.emit('Добавляю главы..')
-        self.my_signals.label_info_signal_2.emit('--<>--.')
+        self.my_signals = my_signals
+        self._init_signals()
+
+    def _init_signals(self):
+        """Инициализирует сигналы прогресса."""
+        if self.my_signals:
+            self.my_signals.progress_bar_signal.emit(0)
+            self.my_signals.label_info_signal.emit("Добавляю главы..")
+            self.my_signals.label_info_signal_2.emit("--<>--")
 
     def create_chapters_metadata(self):
-        metadata_content = ";FFMETADATA1\n"
-        current_time = 0
-        for i, duration in enumerate(self.chapter_durations):
-            start_time = current_time
-            end_time = current_time + duration
-            metadata_content += f"[CHAPTER]\nTIMEBASE=1/1\nSTART={int(start_time)}\nEND={int(end_time)}\ntitle=chapter_{i + 1:03}\n"
-            current_time = end_time
-        return metadata_content
+        """Генерирует метаданные для глав в формате FFmpeg."""
+        buffer = StringIO()
+        buffer.write(";FFMETADATA1\n")
+        current_time = 0.0
+
+        for i, duration in enumerate(self.chapter_durations, 1):
+            start = int(current_time)
+            end = int(current_time + duration)
+            buffer.write(
+                f"[CHAPTER]\nTIMEBASE=1/1\nSTART={start}\nEND={end}\n"
+                f"title=chapter_{i:03}\n\n"
+            )
+            current_time += duration
+
+        return buffer.getvalue()
 
     def add_chapters(self):
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".ffmetadata") as f:
-            f.write(self.create_chapters_metadata().encode('utf-8'))
-        metadata_file = f.name
-        output_temp_file = tempfile.mktemp(suffix=".m4b")
+        """Добавляет главы в аудиофайл через FFmpeg."""
+        # Проверка наличия FFmpeg
+        if not shutil.which("ffmpeg"):
+            self._notify_error("FFmpeg не найден! Установите FFmpeg и добавьте его в PATH.")
+            return False
+
+        with tempfile.NamedTemporaryFile(mode="w+", suffix=".ffmetadata", delete=False) as meta_file:
+            metadata_content = self.create_chapters_metadata()
+            meta_file.write(metadata_content)
+            metadata_path = meta_file.name
+
+        output_temp = tempfile.NamedTemporaryFile(suffix=".m4b", delete=False).name
+        success = False
 
         try:
-            # Команда ffmpeg для добавления глав
-            ffmpeg_command = [
-                "ffmpeg", "-i", self.output_file, "-i", metadata_file,
-                "-map_metadata", "1", "-codec", "copy", output_temp_file
+            ffmpeg_cmd = [
+                "ffmpeg",
+                "-y",  # Перезапись без подтверждения
+                "-i", self.output_file,
+                "-i", metadata_path,
+                "-map_metadata", "1",
+                "-c", "copy",
+                output_temp
             ]
 
-            # Запуск ffmpeg с отслеживанием прогресса
-            process = subprocess.Popen(ffmpeg_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                       universal_newlines=True, creationflags=subprocess.CREATE_NO_WINDOW)
+            process = subprocess.Popen(
+                ffmpeg_cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                universal_newlines=True,
+                encoding="utf-8",
+                errors="replace",
+                creationflags=subprocess.CREATE_NO_WINDOW
+            )
 
             total_duration = sum(self.chapter_durations)
-            progress_pattern = re.compile(r'time=(\d{2}):(\d{2}):(\d{2})\.\d{2}')
+            progress_re = re.compile(r"time=(\d+):(\d{2}):(\d{2})\.\d{2}")
 
-            while True:
-                output = process.stderr.readline()
-                if output == '' and process.poll() is not None:
-                    break
-                if output:
-                    match = progress_pattern.search(output)
-                    if match:
-                        hours, minutes, seconds = map(int, match.groups())
-                        current_time = hours * 3600 + minutes * 60 + seconds
-                        progress = int((current_time / total_duration) * 100)
-                        if self.my_signals:
-                            self.my_signals.progress_bar_signal.emit(progress)  # Обновляем прогресс
+            while process.poll() is None:
+                line = process.stdout.readline()
+                if match := progress_re.search(line):
+                    h, m, s = map(int, match.groups())
+                    current = h * 3600 + m * 60 + s
+                    progress = int((current / total_duration) * 100) if total_duration > 0 else 0
+                    self._update_progress(progress)
 
-            process.wait()
             if process.returncode == 0:
-                # print(f'Главы успешно добавлены в {self.output_file}')
-                self.my_signals.label_info_signal.emit(f'Главы успешно добавлены в {self.output_file}')
+                shutil.move(output_temp, self.output_file)
+                success = True
+                self._notify_success()
             else:
-                # print(f'Ошибка при добавлении глав: {process.stderr.read()}')
-                self.my_signals.label_info_signal.emit(f'Ошибка при добавлении глав: {process.stderr.read()}')
+                self._notify_error(f"FFmpeg error (code {process.returncode})")
 
-            # Заменяем оригинальный файл временным
-            shutil.move(output_temp_file, self.output_file)
         except Exception as e:
-            # print(f'Ошибка при добавлении глав: {e}')
-            self.my_signals.label_info_signal.emit(f'Ошибка при добавлении глав: {e}')
+            self._notify_error(f"Critical error: {str(e)}")
         finally:
-            os.remove(metadata_file)
-            if os.path.exists(output_temp_file):
-                os.remove(output_temp_file)
+            self._cleanup(metadata_path, output_temp)
+            return success
+
+    def _update_progress(self, value):
+        """Обновляет прогресс через сигналы."""
+        if self.my_signals:
+            self.my_signals.progress_bar_signal.emit(value)
+
+    def _notify_success(self):
+        """Уведомляет об успешном завершении."""
+        if self.my_signals:
+            self.my_signals.label_info_signal.emit(
+                f"Главы успешно добавлены в {os.path.basename(self.output_file)}"
+            )
+
+    def _notify_error(self, message):
+        """Уведомляет об ошибке."""
+        if self.my_signals:
+            self.my_signals.label_info_signal.emit(f"Ошибка: {message}")
+
+    def _cleanup(self, *files):
+        """Удаляет временные файлы."""
+        for path in files:
+            try:
+                if os.path.exists(path):
+                    os.remove(path)
+            except Exception as e:
+                self._notify_error(f"Cleanup failed: {str(e)}")
