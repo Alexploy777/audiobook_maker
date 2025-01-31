@@ -279,7 +279,6 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         self.progressBar.setValue(100)
         self.timer.stop_timer()
 
-        # checkChapters(self.output_path)
 
         self.checkchapters.checkChapters(self.output_path)
         self.tabWidget.setCurrentIndex(1)
