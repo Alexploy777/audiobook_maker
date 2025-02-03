@@ -41,7 +41,7 @@ class AudiobookCreator(QMainWindow, Ui_MainWindow):
         """Загружает конфигурацию и настраивает окно."""
         Config.load_config()
         self.setWindowTitle(Config.WINDOWTITLE)
-        self.setWindowIcon(QIcon("Audiobook2.png"))
+        self.setWindowIcon(QIcon("audiobook.png"))
         self.allowed_extensions = tuple(Config.ALLOWED_EXTENSIONS)
 
     def _init_ui(self):
