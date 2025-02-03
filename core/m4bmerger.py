@@ -6,6 +6,7 @@ from PyQt5.QtCore import QRunnable
 from .addchapters import AddChapters
 from .addcoverandmetadata import AddCoverAndMetadata
 from .convertersignals import ConverterSignals
+import traceback
 
 
 class M4bMerger(QRunnable):
@@ -53,7 +54,8 @@ class M4bMerger(QRunnable):
             ]
 
             process = subprocess.Popen(ffmpeg_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                       universal_newlines=True, creationflags=subprocess.CREATE_NO_WINDOW)
+                                       universal_newlines=True, encoding='utf-8',
+                                       creationflags=subprocess.CREATE_NO_WINDOW)
 
             total_duration = sum(self.durations)
             progress_pattern = re.compile(r'time=(\d{2}):(\d{2}):(\d{2})\.\d{2}')
@@ -79,7 +81,8 @@ class M4bMerger(QRunnable):
                 self.my_signals.label_info_signal.emit(f'Ошибка при объединении файлов: {process.stderr.read()}')
         except Exception as e:
             # print(f'Ошибка при объединении файлов: {e}')
-            self.my_signals.label_info_signal.emit(f'Ошибка при объединении файлов: {e}')
+            self.my_signals.label_info_signal.emit(f'Исключение при объединении файлов: {e}')
+            print(traceback.format_exc())
         finally:
             os.remove(temp_file.name)
 

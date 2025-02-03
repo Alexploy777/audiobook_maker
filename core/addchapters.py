@@ -3,6 +3,7 @@ import tempfile
 import os
 import shutil
 import re
+import traceback
 
 class AddChapters:
     def __init__(self, output_file, chapter_durations, my_signals=None):
@@ -38,7 +39,8 @@ class AddChapters:
 
             # Запуск ffmpeg с отслеживанием прогресса
             process = subprocess.Popen(ffmpeg_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                       universal_newlines=True, creationflags=subprocess.CREATE_NO_WINDOW)
+                                       universal_newlines=True, encoding='utf-8',
+                                       creationflags=subprocess.CREATE_NO_WINDOW)
 
             total_duration = sum(self.chapter_durations)
             progress_pattern = re.compile(r'time=(\d{2}):(\d{2}):(\d{2})\.\d{2}')
@@ -68,7 +70,8 @@ class AddChapters:
             shutil.move(output_temp_file, self.output_file)
         except Exception as e:
             # print(f'Ошибка при добавлении глав: {e}')
-            self.my_signals.label_info_signal.emit(f'Ошибка при добавлении глав: {e}')
+            self.my_signals.label_info_signal.emit(f'Исключение при добавлении глав: {e}')
+            print(traceback.format_exc())
         finally:
             os.remove(metadata_file)
             if os.path.exists(output_temp_file):
