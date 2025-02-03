@@ -56,7 +56,8 @@ class M4bMerger(QRunnable):
             ]
 
             process = subprocess.Popen(ffmpeg_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                       universal_newlines=True, creationflags=subprocess.CREATE_NO_WINDOW)
+                                       universal_newlines=True, encoding='utf-8',
+                                       creationflags=subprocess.CREATE_NO_WINDOW)
 
             total_duration = sum(self.durations)
             progress_pattern = re.compile(r'time=(\d{2}):(\d{2}):(\d{2})\.\d{2}')
