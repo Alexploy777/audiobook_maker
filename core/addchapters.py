@@ -16,7 +16,8 @@ class AddChapters:
     def _init_signals(self):
         """Инициализирует сигналы прогресса."""
         if self.my_signals:
-            self.my_signals.progress_bar_signal.emit(0)
+            # self.my_signals.progress_bar_signal.emit(0)
+            self.my_signals.progress_bar_signal_m4bmerger.emit(0)
             self.my_signals.label_info_signal.emit("Добавляю главы..")
             self.my_signals.label_info_signal_2.emit("--<>--")
 
@@ -100,7 +101,8 @@ class AddChapters:
     def _update_progress(self, value):
         """Обновляет прогресс через сигналы."""
         if self.my_signals:
-            self.my_signals.progress_bar_signal.emit(value)
+            # self.my_signals.progress_bar_signal.emit(value)
+            self.my_signals.progress_bar_signal_m4bmerger.emit(value)
 
     def _notify_success(self):
         """Уведомляет об успешном завершении."""

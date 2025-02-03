@@ -113,7 +113,8 @@ class Converter(QRunnable):
 
     def _emit_progress(self, progress: int, message: str, details: str) -> None:
         """Отправляет сигналы об успешном прогрессе."""
-        self.my_signals.progress_bar_signal.emit(progress)
+        # self.my_signals.progress_bar_signal.emit(progress)
+        self.my_signals.progress_bar_signal.emit()
         self.my_signals.label_info_signal.emit(message)
         self.my_signals.label_info_signal_2.emit(details)
 
@@ -121,4 +122,5 @@ class Converter(QRunnable):
         """Отправляет сигналы об ошибке."""
         self.my_signals.label_info_signal.emit(f"{message}: {details}")
         self.my_signals.label_info_signal_2.emit("Операция прервана")
-        self.my_signals.progress_bar_signal.emit(-1)
+        # self.my_signals.progress_bar_signal.emit(-1)
+        self.my_signals.progress_bar_signal.emit()

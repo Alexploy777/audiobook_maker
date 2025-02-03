@@ -35,7 +35,8 @@ class M4bMerger(QRunnable):
     def merge_files(self):
         self.my_signals.label_info_signal.emit('Начинаю объединять файлы..')
         self.my_signals.label_info_signal_2.emit('--><--')
-        self.my_signals.progress_bar_signal.emit(0)
+        # self.my_signals.progress_bar_signal.emit(0)
+        self.my_signals.progress_bar_signal_m4bmerger.emit(0)
 
         try:
             with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_file:
@@ -70,7 +71,7 @@ class M4bMerger(QRunnable):
                         hours, minutes, seconds = map(int, match.groups())
                         current_time = hours * 3600 + minutes * 60 + seconds
                         progress = int((current_time / total_duration) * 100)
-                        self.my_signals.progress_bar_signal.emit(progress)
+                        self.my_signals.progress_bar_signal_m4bmerger.emit(progress)
 
             process.wait()
             if process.returncode == 0:

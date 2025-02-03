@@ -24,7 +24,8 @@ class AddCoverAndMetadata:
     def _update_progress(self, value: int, message: str = "", message2: str = "") -> None:
         if self.my_signals:
             if value >= 0:
-                self.my_signals.progress_bar_signal.emit(value)
+                # self.my_signals.progress_bar_signal.emit(value)
+                self.my_signals.progress_bar_signal_m4bmerger.emit(value)
             if message:
                 self.my_signals.label_info_signal.emit(message)
             if message2:
