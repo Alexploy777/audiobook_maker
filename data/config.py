@@ -1,7 +1,8 @@
 # data/config.py
 import json
 import os
-from typing import Optional
+
+from PyQt5.QtWidgets import QMessageBox
 
 
 class Config:
@@ -11,7 +12,7 @@ class Config:
                              '192k', '256k', '320k']
     FFMPEG_PATH = "external"
     CONFIG_FILE = "config.json"
-    ALLOWED_EXTENSIONS = ('.mp3')
+    ALLOWED_EXTENSIONS = ('.mp3',)
     AUDIO_CODEC = "aac"
     OUTPUT_FORMAT = "m4b"
     CHAPTER_MARKS = True
@@ -22,29 +23,26 @@ class Config:
     DEFAULT_TITLE = "Untitled"
     FFMPEG_LOG_LEVEL = "info"
 
-    # # Хранить оригинальные значения атрибутов
-    # original_attributes = {}
-
-    # def __new__(cls, *args, **kwargs):
-    #     # Сохраняем оригинальные значения атрибутов при первой инициации
-    #     cls.save_original_values()
-    #     print(cls.original_attributes)  # Выводим оригинальные значения
-    #     # return super(Config, cls).__new__(cls)
-
-    # @classmethod
-    # def save_original_values(cls):
-    #     cls.original_attributes = {key: getattr(cls, key) for key in dir(cls) if
-    #                                not key.startswith("__") and not callable(getattr(cls, key))}
-
+    @classmethod
+    def get_config_path(cls):
+        CONFIG_DIR = os.path.join(os.getenv('APPDATA'), 'AudioBookMacker')
+        CONFIG_PATH = os.path.join(CONFIG_DIR, cls.CONFIG_FILE)
+        os.makedirs(CONFIG_DIR, exist_ok=True)
+        return CONFIG_PATH
 
     @classmethod
     def load_config(cls):
-        if os.path.exists(cls.CONFIG_FILE):
-            with open(cls.CONFIG_FILE, 'r') as f:
-                config_data = json.load(f)
-                for key, value in config_data.items():
-                    if hasattr(cls, key):
-                        setattr(cls, key, value)
+        CONFIG_PATH = cls.get_config_path()
+        if os.path.exists(CONFIG_PATH):
+            try:
+                with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
+                    config_data = json.load(f)
+                    for key, value in config_data.items():
+                        if hasattr(cls, key):
+                            setattr(cls, key, value)
+            except (json.JSONDecodeError, OSError) as e:
+                print(f"Ошибка загрузки конфигурации: {e}")
+                QMessageBox.critical(None, "Ошибка", f"Ошибка загрузки конфигурации: {e}")
 
     @classmethod
     def set_audio_bitrate(cls, bitrate):
@@ -53,11 +51,12 @@ class Config:
 
     @classmethod
     def save_config(cls):
-        config_data = {key: getattr(cls, key) for key in dir(cls) if not key.startswith("__") and not callable(getattr(cls, key))}
-        with open(cls.CONFIG_FILE, 'w') as f:
+        CONFIG_PATH = cls.get_config_path()
+        config_data = {key: getattr(cls, key) for key in dir(cls) if
+                       not key.startswith("__") and not callable(getattr(cls, key))}
+        with open(CONFIG_PATH, 'w', encoding='utf-8') as f:
             json.dump(config_data, f, indent=4)
 
-    # @classmethod
-    # def reset_to_original_values(cls):
-    #     for key, value in cls.original_attributes.items():
-    #         setattr(cls, key, value)
+
+if __name__ == '__main__':
+    pass
