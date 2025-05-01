@@ -1,8 +1,11 @@
 import os
+import math
 import shutil
 import subprocess
 import tempfile
 import logging
+import traceback
+
 from typing import Optional
 
 from PyQt5.QtCore import QRunnable, pyqtSlot
@@ -31,7 +34,21 @@ class Converter(QRunnable):
         # Конфигурационные параметры
         self.audio_codec = Config.AUDIO_CODEC
         self.output_format = f'.{Config.OUTPUT_FORMAT}'
-        self.ffmpeg_timeout = 30  # Таймаут выполнения в секундах
+        # self.ffmpeg_timeout = 30  # Таймаут выполнения в секундах (старый вариант)
+
+        # 📐 Таймаут рассчитывается на основе размера файла
+        self.ffmpeg_timeout = self._calculate_timeout(self.file_path)
+
+    def _calculate_timeout(self, file_path: str) -> int:
+        """Рассчитывает таймаут конвертации на основе размера файла."""
+        try:
+            file_size_mb = os.path.getsize(file_path) / (1024 * 1024)
+            timeout = max(30, math.ceil(file_size_mb * 5))  # 5 сек на 1 МБ
+            self.logger.debug(f"Рассчитан таймаут: {timeout} сек для файла {file_path}")
+            return timeout
+        except Exception as e:
+            self.logger.warning(f"Не удалось рассчитать таймаут, используется стандартный: {str(e)}")
+            return 60  # запасной таймаут
 
     @pyqtSlot()
     def run(self) -> None:
@@ -50,6 +67,7 @@ class Converter(QRunnable):
         except Exception as e:
             self.logger.exception(f"Критическая ошибка: {str(e)}")
             self._emit_error("Критическая ошибка", str(e))
+            print(traceback.format_exc())
 
     def _validate_inputs(self) -> None:
         """Проверка валидности входных данных."""
@@ -97,18 +115,21 @@ class Converter(QRunnable):
         except subprocess.TimeoutExpired:
             self.logger.error(f"Таймаут конвертации: {self.file_path}")
             os.remove(output_buffer.name)
+            print(traceback.format_exc())
             return None
 
         except subprocess.CalledProcessError as e:
             error_msg = f"Ошибка FFmpeg ({e.returncode}): {e.stderr}"
             self.logger.error(error_msg)
             os.remove(output_buffer.name)
+            print(traceback.format_exc())
             return None
 
         except Exception as e:
             self.logger.error(f"Ошибка конвертации: {str(e)}")
             if os.path.exists(output_buffer.name):
                 os.remove(output_buffer.name)
+            print(traceback.format_exc())
             return None
 
     def _emit_progress(self, progress: int, message: str, details: str) -> None:
